@@ -1,666 +1,835 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>“ยิ้มรับดอกสูง” Calculate</title>
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ยิ้มรับดอกสูง — Promotion Calculate</title>
 
-    <style>
-        :root {
-            --primary-color: #002855; /* Navy Blue */
-            --accent-color: #FFC300; /* Gold/Amber */
-            --bg-light: #F5F5F5;
-            --text-dark: #333333;
-        }
+<!-- libs -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
 
-        body {
-            font-family: 'Sarabun', sans-serif;
-            background-color: var(--bg-light);
-            color: var(--text-dark);
-        }
+<!-- fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
 
-        /* Header Styling */
-        .header-section {
-            background-color: var(--primary-color);
-            color: white;
-            padding: 20px 0;
-            border-bottom: 5px solid var(--accent-color);
-        }
-        .header-title {
-            font-weight: 700;
-            font-size: 1.5rem;
-        }
-        .producer-credit {
-            font-size: 0.8rem;
-            opacity: 0.8;
-        }
+<style>
+:root{
+  --navy:#002855;
+  --led:#3fa9f5;
+  --glass-bg: rgba(255,255,255,0.55);
+  --muted:#6b7280;
+  --bg:#f4f7fb;
+  --card:#ffffff;
+  --gradient-start:#6b64ff;
+  --gradient-end:#4aa3ff;
+  --accent:#a6d8ff;
+  font-family: "Noto Sans Thai", "Nunito", Arial, sans-serif;
+}
 
-        /* Card Styling */
-        .custom-card {
-            border: none;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            background: white;
-            transition: transform 0.2s;
-        }
-        .custom-card:hover {
-            transform: translateY(-2px);
-        }
-        .card-header-custom {
-            background-color: white;
-            border-bottom: 1px solid #eee;
-            font-weight: 700;
-            color: var(--primary-color);
-            padding: 15px 20px;
-        }
+/* Reset */
+*{box-sizing:border-box}
+body{ margin:0; background:var(--bg); color:#08111a; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+a{ color:inherit; text-decoration:none }
 
-        /* Input Styling */
-        .form-label {
-            font-weight: 500;
-            color: var(--primary-color);
-        }
-        .form-control, .form-select {
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            padding: 10px;
-        }
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 0.2rem rgba(0, 40, 85, 0.15);
-        }
+/* layout */
+.app{ max-width:1100px; margin:18px auto; padding:18px; }
+.header{ display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:12px; }
+.title{ font-size:20px; color:var(--navy); font-weight:900; }
+.produces{ color:var(--muted); font-size:13px; }
 
-        /* Button Styling */
-        .btn-calculate {
-            background-color: var(--accent-color);
-            color: var(--primary-color);
-            font-weight: 700;
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .btn-calculate:hover {
-            background-color: #e6b000;
-            color: black;
-        }
+/* progress bar */
+.progress{ display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+.step{ display:flex; align-items:center; gap:12px; }
+.dot{ width:40px; height:40px; border-radius:50%; background:#e6eef8; display:flex; align-items:center; justify-content:center; font-weight:800; color:#9aa4b2; position:relative; }
+.dot.active{ background:linear-gradient(180deg,var(--gradient-start),var(--gradient-end)); color:white; box-shadow:0 8px 28px rgba(74,163,255,0.14); transform:translateY(-2px); }
+.connector{ flex:1; height:6px; background:#e9eefc; border-radius:6px; }
 
-        /* Results KPI */
-        .kpi-box {
-            text-align: center;
-            padding: 15px;
-            background: linear-gradient(135deg, var(--primary-color) 0%, #001f3f 100%);
-            color: white;
-            border-radius: 10px;
-            position: relative;
-            overflow: hidden;
-        }
-        .kpi-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--accent-color);
-        }
-        .kpi-label {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
+/* pages */
+.page{ display:none; opacity:0; transform:translateY(6px); transition:all .28s ease; }
+.page.active{ display:block; opacity:1; transform:none; }
 
-        /* Table */
-        .table-custom th {
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: 500;
-        }
-        .table-custom tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
+/* glass buttons */
+.group-buttons{ display:flex; gap:12px; margin:10px 0 18px 0; }
+.glass-btn{
+  flex:1; padding:16px; border-radius:12px; text-align:center; cursor:pointer; font-weight:800;
+  background: linear-gradient(180deg, rgba(255,255,255,0.65), rgba(245,249,251,0.62));
+  border:1px solid rgba(255,255,255,0.6); box-shadow:0 8px 20px rgba(2,6,23,0.04);
+  transition:all .22s ease;
+}
+.glass-btn .label{ display:block; font-size:16px; color:var(--navy); }
+.glass-btn.active{ background: linear-gradient(180deg, #e8f4ff, #e8f8ff); border:2px solid var(--led); color:var(--navy); box-shadow:0 14px 36px rgba(63,169,245,0.12); transform:translateY(-6px); }
+.glass-btn.dim{ opacity:0.35; transform:none; box-shadow:none; }
 
-        /* Utility */
-        .text-gold { color: var(--accent-color); }
-        .text-navy { color: var(--primary-color); }
-        .hidden { display: none; }
-    </style>
+/* product cards */
+.prod-list{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin-top:12px; }
+.pro-card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(250,250,250,0.95));
+  border-radius:12px; padding:12px; cursor:pointer; border:1px solid rgba(11,18,32,0.04);
+  transition: transform .28s ease, box-shadow .28s ease, opacity .18s ease;
+  transform-origin: top center;
+  overflow:hidden;
+}
+.pro-card.enter{ animation: slideDown .36s ease both; }
+@keyframes slideDown{ from{ transform:translateY(-16px) scale(.98); opacity:0 } to{ transform:none; opacity:1 } }
+.pro-card.selected{ transform:translateY(-8px); box-shadow:0 18px 48px rgba(63,169,245,0.08); border:1px solid rgba(63,169,245,0.12); background: linear-gradient(180deg, rgba(235,249,255,0.85), rgba(245,250,255,0.78)); }
+.pro-card.dim{ opacity:0.4; filter:grayscale(12%); }
+
+/* usp collapse */
+.usp{ max-height:0; overflow:hidden; transition:all .34s cubic-bezier(.2,.9,.2,1); opacity:0; transform:translateY(-6px); }
+.usp.open{ max-height:300px; opacity:1; transform:translateY(0); padding-top:8px; }
+
+/* form */
+.form{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px; }
+.form .full{ grid-column:1/-1; }
+label{ display:block; font-weight:800; color:var(--navy); margin-bottom:6px; }
+input, select, textarea{ width:100%; padding:10px; border-radius:8px; border:1px solid rgba(11,18,32,0.06); background:white; }
+.range-wrap{ display:flex; gap:12px; align-items:center; }
+.range-value{ width:80px; text-align:center; font-weight:900; color:var(--navy); }
+
+/* dashboard summary styles (match image style) */
+.summary-card{
+  background: linear-gradient(180deg,#eef6ff,#f8fbff);
+  border-radius:16px; padding:18px; box-shadow: 0 12px 36px rgba(13,35,67,0.06); border:1px solid rgba(11,18,32,0.04);
+}
+.total-wrap{ display:flex; gap:16px; align-items:center; }
+.total-left{ flex:1; }
+.total-title{ font-size:13px; color:var(--muted); margin-bottom:8px; }
+.total-number{ font-size:44px; font-weight:900; color:var(--navy); padding:12px 16px; border-radius:10px; background:linear-gradient(90deg, rgba(255,255,255,0.6), rgba(255,255,255,0.3)); display:inline-block; }
+.small-cards{ display:flex; gap:12px; margin-top:14px; flex-wrap:wrap; }
+.small-card{ background: linear-gradient(180deg, rgba(12,58,107,0.95), rgba(17,70,128,0.95)); color:white; padding:12px; border-radius:10px; flex:1; min-width:200px; box-shadow:0 10px 30px rgba(10,85,150,0.12); }
+.small-card .label{ font-size:12px; opacity:0.9; }
+.small-card .value{ font-weight:800; font-size:18px; margin-top:8px; }
+
+/* transaction block */
+.trans-wrap{ margin-top:16px; border-radius:12px; overflow:hidden; box-shadow:0 12px 36px rgba(11,18,32,0.06); }
+.trans-head{ background: linear-gradient(90deg,var(--gradient-start),var(--gradient-end)); color:white; padding:12px 16px; display:flex; justify-content:space-between; align-items:center; }
+.trans-body{ padding:14px; background:#fff; display:grid; gap:10px; }
+.row-item{ display:flex; justify-content:space-between; align-items:center; padding:10px; border-radius:8px; background: linear-gradient(90deg,#f6f8ff,#f2f7ff); }
+
+/* final */
+.final-strip{ margin-top:14px; background:#e6fff3; border-radius:12px; padding:12px; text-align:center; box-shadow:0 8px 22px rgba(18,95,70,0.06); }
+.final-strip .num{ font-size:34px; font-weight:900; color:#0b6b4a; }
+
+/* footer buttons */
+.controls{ display:flex; gap:10px; justify-content:flex-end; margin-top:12px; }
+.btn{ padding:10px 14px; border-radius:10px; border:none; cursor:pointer; font-weight:800; }
+.btn.ghost{ background:transparent; border:1px solid rgba(11,18,32,0.06); color:var(--navy); }
+.btn.primary{ background:linear-gradient(90deg,var(--gradient-start),var(--gradient-end)); color:white; box-shadow:0 10px 28px rgba(74,163,255,0.14); }
+
+/* responsive */
+@media(max-width:900px){
+  .form{ grid-template-columns:1fr; }
+  .group-buttons{ flex-direction:column; }
+  .total-number{ font-size:34px; }
+  .small-cards{ flex-direction:column; }
+}
+
+/* print */
+@media print{
+  body{ background:white; }
+  .app{ padding:0; margin:0; }
+  .controls, .header { display:none; }
+}
+</style>
 </head>
 <body>
+<div class="app">
 
-    <header class="header-section">
-        <div class="container d-flex justify-content-between align-items-center">
-            <div>
-                <div class="header-title"><i class="fas fa-chart-line text-gold"></i> “ยิ้มรับดอกสูง” Calculate</div>
-                <div class="small">เครื่องมือคำนวณ Blended IRR ประกันชีวิตควบเงินฝาก</div>
-            </div>
-            <div class="text-end producer-credit">
-                Produces : Yannapat & Nantida [PRU Academy RH5]
-            </div>
-        </div>
-    </header>
+  <div class="header">
+    <div>
+      <div class="title">ยิ้มรับดอกสูง — Promotion Calculate</div>
+      <div class="produces">Produces: <strong>Yannapat &amp; Nantida</strong> [PRU Academy RH5]</div>
+    </div>
+    <div class="small" style="text-align:right;color:var(--muted)">Client-side demo • No data stored</div>
+  </div>
 
-    <div class="container py-4">
-        <div class="row">
-            
-            <div class="col-lg-4">
-                <div class="custom-card">
-                    <div class="card-header-custom">
-                        <i class="fas fa-sliders-h me-2"></i> กำหนดข้อมูล (Input)
-                    </div>
-                    <div class="card-body">
-                        <form id="calcForm">
-                            <div class="mb-3">
-                                <label class="form-label">เลือกแบบประกัน (Product)</label>
-                                <select class="form-select" id="productSelect" onchange="updateFormLogic()">
-                                    <optgroup label="Group 1: Wealth & Legacy (High Multiplier)">
-                                        <option value="15_5_plus" data-group="1" data-type="fixed">ttb global index 15/5 Plus</option>
-                                        <option value="15_5_max" data-group="1" data-type="fixed">ttb global index 15/5 Max</option>
-                                        <option value="legacy_99_5" data-group="1" data-type="complex">ttb ส่งต่อความมั่งคั่ง 99/5</option>
-                                        <option value="legacy_99_3" data-group="1" data-type="complex">ttb อัลติเมท เลกาซี 99/3</option>
-                                        <option value="treasure" data-group="1" data-type="complex">ttb เดอะ เทรเชอร์ (All Plans)</option>
-                                    </optgroup>
-                                    <optgroup label="Group 2: Savings & Mid-Term">
-                                        <option value="15_6" data-group="2" data-type="age_based">ttb money saver 15/6</option>
-                                        <option value="11_3" data-group="2" data-type="fixed">ttb premium saver 11/3</option>
-                                        <option value="10_5" data-group="2" data-type="fixed">ttb smart bonus 10/5</option>
-                                    </optgroup>
-                                </select>
-                            </div>
+  <!-- progress -->
+  <div class="progress" aria-hidden="false">
+    <div class="step">
+      <div id="dot1" class="dot active">1</div>
+      <div style="font-size:13px;color:var(--muted)">เลือกผลิตภัณฑ์</div>
+    </div>
+    <div class="connector"></div>
+    <div class="step">
+      <div id="dot2" class="dot">2</div>
+      <div style="font-size:13px;color:var(--muted)">ข้อมูลลูกค้า</div>
+    </div>
+    <div class="connector"></div>
+    <div class="step">
+      <div id="dot3" class="dot">3</div>
+      <div style="font-size:13px;color:var(--muted)">สรุปผล</div>
+    </div>
+  </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">เบี้ยประกันภัยต่อปี (บาท)</label>
-                                <input type="number" class="form-control" id="premiumInput" value="100000" min="0" step="1000">
-                                <div id="minPremiumAlert" class="text-danger small mt-1 hidden">
-                                    * เบี้ยต่ำกว่า 50,000 ไม่ได้รับสิทธิ์โปรโมชั่น
-                                </div>
-                            </div>
+  <!-- PAGE 1 -->
+  <div id="page1" class="page active">
+    <label style="font-weight:900; color:var(--navy);">1) เลือกประเภทผลิตภัณฑ์</label>
+    <div class="small" style="margin-bottom:8px;color:var(--muted)">กดปุ่มเพื่อเลือกกลุ่มผลิตภัณฑ์</div>
 
-                            <div class="mb-3" id="ageInputGroup">
-                                <label class="form-label">อายุลูกค้า (ปี)</label>
-                                <input type="number" class="form-control" id="ageInput" value="35" min="0" max="70">
-                                <div class="form-text text-muted" id="ageHelp">ใช้อ้างอิงในการคำนวณทุนประกัน</div>
-                            </div>
-
-                            <div class="mb-3 hidden" id="saOverrideGroup">
-                                <label class="form-label">ทุนประกันภัย (SA) (บาท)</label>
-                                <input type="number" class="form-control" id="saInput" value="0">
-                                <div class="form-text text-muted">แบบประกันนี้เบี้ยผันแปรตามเพศ/อายุ กรุณาระบุทุนประกันที่คำนวณได้จากระบบขาย</div>
-                            </div>
-
-                            <hr>
-
-                            <div class="mb-3">
-                                <label class="form-label">ทางเลือกเงินฝาก (Promotion)</label>
-                                <div class="form-check custom-radio mb-2">
-                                    <input class="form-check-input" type="radio" name="promoOption" id="optA" value="A" checked onchange="updateInterestDefaults()">
-                                    <label class="form-check-label" for="optA">
-                                        ทางเลือก A (36 เดือน) <span class="badge bg-warning text-dark" id="badgeA">Max 20x/10x</span>
-                                    </label>
-                                </div>
-                                <div class="form-check custom-radio">
-                                    <input class="form-check-input" type="radio" name="promoOption" id="optB" value="B" onchange="updateInterestDefaults()">
-                                    <label class="form-check-label" for="optB">
-                                        ทางเลือก B (6 เดือน) <span class="badge bg-secondary" id="badgeB">Max 15x/7.5x</span>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                                <div class="col-6">
-                                    <label class="form-label small">ดอกเบี้ย (%)</label>
-                                    <input type="number" class="form-control form-control-sm" id="interestRate" value="1.50" step="0.01">
-                                </div>
-                                <div class="col-6">
-                                    <label class="form-label small">วงเงินฝาก (Auto)</label>
-                                    <input type="text" class="form-control form-control-sm" id="depositAmountDisplay" readonly style="background-color: #e9ecef;">
-                                </div>
-                            </div>
-
-                            <button type="button" class="btn-calculate" onclick="calculateAll()">
-                                <i class="fas fa-calculator"></i> คำนวณผลประโยชน์
-                            </button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-8">
-                <div class="row mb-3">
-                    <div class="col-md-4">
-                        <div class="kpi-box">
-                            <div class="kpi-label">Blended IRR (ต่อปี)</div>
-                            <div class="kpi-value" id="irrResult">0.00%</div>
-                            <div class="small text-white-50">ผลตอบแทนรวมเฉลี่ย</div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="kpi-box" style="background: linear-gradient(135deg, #004085 0%, #002855 100%);">
-                            <div class="kpi-label">กำไรสุทธิ (Net Profit)</div>
-                            <div class="kpi-value" style="font-size: 1.8rem;" id="netProfitResult">0</div>
-                            <div class="small text-white-50">รวมเงินคืนและดอกเบี้ย</div>
-                        </div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="kpi-box" style="background: white; color: var(--primary-color); border: 2px solid var(--primary-color);">
-                            <div class="kpi-label text-navy">วงเงินฝากที่ได้สิทธิ์</div>
-                            <div class="kpi-value text-navy" style="font-size: 1.8rem;" id="depositCapResult">0</div>
-                            <div class="small text-muted">บาท</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="custom-card">
-                    <div class="card-header-custom d-flex justify-content-between">
-                        <span><i class="fas fa-chart-area me-2"></i> เปรียบเทียบมูลค่าสะสม (Wealth Growth)</span>
-                    </div>
-                    <div class="card-body">
-                        <canvas id="wealthChart" height="120"></canvas>
-                    </div>
-                </div>
-
-                <div class="custom-card">
-                    <div class="card-header-custom">
-                        <i class="fas fa-table me-2"></i> ตารางกระแสเงินสด (Cash Flow)
-                    </div>
-                    <div class="card-body table-responsive">
-                        <table class="table table-custom table-bordered table-hover text-center small" id="cfTable">
-                            <thead>
-                                <tr>
-                                    <th>สิ้นปีกรมธรรม์</th>
-                                    <th>ชำระเบี้ย / เงินฝาก</th>
-                                    <th>เงินคืนประกัน</th>
-                                    <th>ดอกเบี้ยรับ</th>
-                                    <th>กระแสเงินสดสุทธิ</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="group-buttons">
+      <div id="btnWealth" class="glass-btn">
+        <span class="label">Wealth</span>
+      </div>
+      <div id="btnSaving" class="glass-btn">
+        <span class="label">Saving</span>
+      </div>
     </div>
 
-    <footer class="text-center py-3 small text-muted">
-        &copy; 2025 “ยิ้มรับดอกสูง” Calculate System. Internal Use Only.<br>
-        Produces : Yannapat & Nantida [PRU Academy RH5]
-    </footer>
+    <div id="prodWrap" class="prod-list" aria-live="polite"></div>
 
-    <script>
-        // --- 1. Configuration & Data ---
-        const PRODUCTS = {
-            // Group 1: Wealth
-            '15_5_plus': { name: 'ttb global index 15/5 Plus', payTerm: 5, protectTerm: 15, type: 'fixed', rate: 1000, logic: 'global_index_plus' },
-            '15_5_max': { name: 'ttb global index 15/5 Max', payTerm: 5, protectTerm: 15, type: 'fixed', rate: 1000, logic: 'global_index_max' },
-            'legacy_99_5': { name: 'ttb ส่งต่อความมั่งคั่ง 99/5', payTerm: 5, protectTerm: 99, type: 'complex', logic: 'legacy' },
-            'legacy_99_3': { name: 'ttb อัลติเมท เลกาซี 99/3', payTerm: 3, protectTerm: 99, type: 'complex', logic: 'legacy' },
-            'treasure': { name: 'ttb เดอะ เทรเชอร์', payTerm: 8, protectTerm: 88, type: 'complex', logic: 'treasure' },
-            
-            // Group 2: Savings
-            '15_6': { name: 'ttb money saver 15/6', payTerm: 6, protectTerm: 15, type: 'age_based', logic: 'saver_15_6' },
-            '11_3': { name: 'ttb premium saver 11/3', payTerm: 3, protectTerm: 11, type: 'fixed', rate: 1000, logic: 'saver_11_3' },
-            '10_5': { name: 'ttb smart bonus 10/5', payTerm: 5, protectTerm: 10, type: 'fixed', rate: 1000, logic: 'smart_10_5' }
-        };
+    <div style="display:flex; justify-content:flex-end; margin-top:12px;">
+      <button id="page1Next" class="btn primary">ต่อไป</button>
+    </div>
+  </div>
 
-        // 15/6 Premium Rate Table (Per 1000 SA)
-        const RATE_15_6 = [
-            { maxAge: 40, rate: 260 },
-            { maxAge: 45, rate: 265 },
-            { maxAge: 50, rate: 270 },
-            { maxAge: 55, rate: 275 },
-            { maxAge: 60, rate: 280 },
-            { maxAge: 65, rate: 287 },
-            { maxAge: 70, rate: 294 }
-        ];
+  <!-- PAGE 2 -->
+  <div id="page2" class="page">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <label style="font-weight:900; color:var(--navy);">2) ข้อมูลลูกค้า & โปรโมชั่น</label>
+        <div class="small" style="color:var(--muted)">กรอกเบี้ย / ทุน (optional) / อายุ — ระบบจะคำนวณ SA ถ้าว่าง</div>
+      </div>
+      <div>
+        <button id="backTo1" class="btn ghost">ย้อนกลับ</button>
+      </div>
+    </div>
 
-        let myChart = null;
+    <div class="form" style="margin-top:12px;">
+      <div>
+        <label>เบี้ยประกันต่อปี (บาท)</label>
+        <input id="inputPremium" type="number" value="100000">
+      </div>
+      <div>
+        <label>ทุนประกัน (Sum Assured — optional)</label>
+        <input id="inputSA" type="number" placeholder="เว้นว่างระบบคำนวณให้">
+      </div>
 
-        // --- 2. Helper Functions ---
-        
-        function formatMoney(num) {
-            return num.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-        }
+      <div>
+        <label>อายุ (ปี)</label>
+        <input id="inputAge" type="number" value="38">
+      </div>
+      <div>
+        <label>เพศ</label>
+        <select id="inputSex"><option value="M">ชาย</option><option value="F">หญิง</option></select>
+      </div>
 
-        function getProductRate15_6(age) {
-            for (let r of RATE_15_6) {
-                if (age <= r.maxAge) return r.rate;
-            }
-            return 294; // Default fallback
-        }
+      <div class="full">
+        <label>โปรโมชั่น TD (เลือก)</label>
+        <div style="display:flex; gap:8px;">
+          <button id="promoA" class="glass-btn">ทางเลือก A (TD 36)</button>
+          <button id="promoB" class="glass-btn">ทางเลือก B (TD 6)</button>
+        </div>
+      </div>
 
-        // IRR Calculation using Newton-Raphson
-        function calculateIRR(values, guess = 0.1) {
-            const maxIter = 1000;
-            const precision = 1e-7;
-            let x = guess;
-            
-            for (let i = 0; i < maxIter; i++) {
-                let fValue = 0;
-                let fDerivative = 0;
-                
-                for (let j = 0; j < values.length; j++) {
-                    fValue += values[j] / Math.pow(1 + x, j);
-                    fDerivative += -j * values[j] / Math.pow(1 + x, j + 1);
-                }
-                
-                let newX = x - fValue / fDerivative;
-                if (Math.abs(newX - x) < precision) return newX;
-                x = newX;
-            }
-            return x;
-        }
+      <div class="full">
+        <label>ระยะเวลาโปรโมชั่น (เดือน)</label>
+        <select id="promoMonths"><option value="36">36</option><option value="6">6</option></select>
+      </div>
 
-        // --- 3. UI Handling ---
+      <div class="full">
+        <label>จำนวนเท่า (Multiplier)</label>
+        <div class="range-wrap">
+          <input id="multSlider" type="range" min="1" max="50" step="0.5" value="10" style="flex:1;">
+          <div class="range-value" id="multValue">10x</div>
+        </div>
+      </div>
 
-        function updateFormLogic() {
-            const pid = document.getElementById('productSelect').value;
-            const p = PRODUCTS[pid];
-            const option = document.querySelector('input[name="promoOption"]:checked').value;
-            
-            // Show/Hide SA Override for Complex products
-            const saGroup = document.getElementById('saOverrideGroup');
-            const ageGroup = document.getElementById('ageInputGroup');
-            
-            if (p.type === 'complex') {
-                saGroup.classList.remove('hidden');
-            } else {
-                saGroup.classList.add('hidden');
-            }
+      <div class="full">
+        <div id="autoInfo" class="small" style="color:var(--muted);"></div>
+      </div>
+    </div>
 
-            // Update Badges
-            const group = document.querySelector(`option[value="${pid}"]`).dataset.group;
-            if (group == "1") {
-                document.getElementById('badgeA').innerText = "Max 20x";
-                document.getElementById('badgeB').innerText = "Max 15x";
-            } else {
-                document.getElementById('badgeA').innerText = "Max 10x";
-                document.getElementById('badgeB').innerText = "Max 7.5x";
-            }
-            
-            updateInterestDefaults();
-        }
+    <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+      <button id="page2Reset" class="btn ghost">รีเซ็ต</button>
+      <button id="page2Next" class="btn primary">คำนวณและดูผล</button>
+    </div>
+  </div>
 
-        function updateInterestDefaults() {
-            const option = document.querySelector('input[name="promoOption"]:checked').value;
-            const rateInput = document.getElementById('interestRate');
-            if (option === 'A') rateInput.value = 1.50;
-            else rateInput.value = 1.25;
-            
-            // Trigger display update but wait for calc
-            calculateDepositLimit(); 
-        }
+  <!-- PAGE 3 -->
+  <div id="page3" class="page">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <label style="font-weight:900; color:var(--navy);">3) ผลการคำนวณ</label>
+        <div class="small" style="color:var(--muted)">สรุปผล, ตาราง และ IRR</div>
+      </div>
+      <div>
+        <button id="backTo2" class="btn ghost">ย้อนกลับ</button>
+      </div>
+    </div>
 
-        function calculateDepositLimit() {
-            const pid = document.getElementById('productSelect').value;
-            const premium = parseFloat(document.getElementById('premiumInput').value) || 0;
-            const option = document.querySelector('input[name="promoOption"]:checked').value;
-            const group = document.querySelector(`option[value="${pid}"]`).dataset.group;
+    <!-- tabs -->
+    <div style="display:flex; gap:8px; margin-top:12px;">
+      <div id="tabSummary" class="tabBtn btn primary" style="padding:8px 12px; border-radius:8px;">สรุปผลตอบแทน</div>
+      <div id="tabInsurance" class="tabBtn btn ghost" style="padding:8px 12px; border-radius:8px;">ผลประโยชน์ (ประกัน)</div>
+      <div id="tabDeposit" class="tabBtn btn ghost" style="padding:8px 12px; border-radius:8px;">ผลประโยชน์ (เงินฝาก)</div>
+    </div>
 
-            let multiplier = 0;
-            if (group == "1") {
-                multiplier = (option === 'A') ? 20 : 15;
-            } else {
-                multiplier = (option === 'A') ? 10 : 7.5;
-            }
+    <!-- Summary content -->
+    <div id="tabSummaryContent" style="margin-top:12px;">
+      <div class="summary-card">
+        <div class="total-wrap">
+          <div class="total-left">
+            <div class="total-title">ผลตอบแทนรวมสุทธิ</div>
+            <div id="outTotal" class="total-number">- ฿</div>
 
-            let rawCap = premium * multiplier;
-            // Cap 200M for Group 2
-            if (group == "2" && rawCap > 200000000) rawCap = 200000000;
-            
-            // Min Premium Check
-            if (premium < 50000) {
-                document.getElementById('minPremiumAlert').classList.remove('hidden');
-                rawCap = 0; // No promo
-            } else {
-                document.getElementById('minPremiumAlert').classList.add('hidden');
-            }
+            <div class="small-cards">
+              <div class="small-card">
+                <div class="label">ผลตอบแทนจากประกัน (หักค่าเบี้ย)</div>
+                <div id="outInsurance" class="value">- ฿</div>
+                <div class="small" style="opacity:0.9; margin-top:6px;">ระยะชำระ: <span id="outPayTerm">-</span> • คุ้มครอง: <span id="outCover">-</span></div>
+              </div>
+              <div class="small-card">
+                <div class="label">ผลตอบแทนจากเงินฝาก (หลังหักภาษี)</div>
+                <div id="outDeposit" class="value">- ฿</div>
+                <div class="small" style="opacity:0.9; margin-top:6px;">อัตรา TD: <span id="outTdRate">-</span> • ระยะ: <span id="outTdMonths">-</span></div>
+              </div>
+            </div>
+          </div>
 
-            document.getElementById('depositCapResult').innerText = formatMoney(rawCap);
-            document.getElementById('depositAmountDisplay').value = formatMoney(rawCap);
-            
-            return rawCap;
-        }
+          <div style="width:300px; display:flex; flex-direction:column; gap:12px;">
+            <div style="background:#fff; border-radius:10px; padding:12px; box-shadow:0 8px 20px rgba(11,18,32,0.04);">
+              <div style="font-size:13px; color:var(--muted)">IRR (Blended)</div>
+              <div id="outIrr" style="font-weight:900; font-size:20px; color:var(--navy); margin-top:8px;">-</div>
+            </div>
+            <div style="background:#fff; border-radius:10px; padding:12px; box-shadow:0 8px 20px rgba(11,18,32,0.04);">
+              <div style="font-size:13px; color:var(--muted)">Equivalent savings rate</div>
+              <div id="outEquiv" style="font-weight:900; font-size:20px; color:var(--navy); margin-top:8px;">-</div>
+            </div>
+          </div>
+        </div>
 
-        // --- 4. Core Engine ---
+        <div class="trans-wrap">
+          <div class="trans-head">
+            <div style="font-weight:800">Transaction</div>
+            <div class="small" style="opacity:0.9">รายละเอียด</div>
+          </div>
+          <div class="trans-body">
+            <div class="row-item"><div>IRR</div><div id="transIrr"><strong>-</strong></div></div>
+            <div class="row-item"><div>Equivalent deposit rate</div><div id="transEquiv"><strong>-</strong></div></div>
 
-        function calculateAll() {
-            // Inputs
-            const pid = document.getElementById('productSelect').value;
-            const product = PRODUCTS[pid];
-            const premium = parseFloat(document.getElementById('premiumInput').value) || 0;
-            const age = parseInt(document.getElementById('ageInput').value) || 35;
-            const depositCap = calculateDepositLimit();
-            const option = document.querySelector('input[name="promoOption"]:checked').value;
-            const intRate = parseFloat(document.getElementById('interestRate').value) / 100;
+            <div style="display:flex; gap:10px; align-items:center; justify-content:space-between;">
+              <div>
+                <label style="font-weight:800; color:var(--muted)">ใช้สิทธิลดหย่อนภาษีหรือไม่</label>
+                <div style="margin-top:6px;">
+                  <label><input id="useTax" type="checkbox"> ใช้</label>
+                </div>
+              </div>
 
-            // 1. Determine SA (Sum Assured)
-            let sa = 0;
-            if (product.type === 'fixed') {
-                sa = premium; // Ratio 1:1 roughly, or calculate reverse
-                // Correct Fixed Logic: Rate per 1000 SA is usually 1000 for these products (1:1)
-                // Except Global Index uses 1000 rate base.
-                sa = (premium / product.rate) * 1000; 
-            } else if (product.type === 'age_based') {
-                const rate = getProductRate15_6(age);
-                sa = (premium / rate) * 1000;
-            } else if (product.type === 'complex') {
-                const manualSA = parseFloat(document.getElementById('saInput').value);
-                if (manualSA > 0) sa = manualSA;
-                else {
-                    // Fallback estimation if user didn't input (Prevents crash)
-                    // Assume rough factor for demo
-                    let factor = 10; // very rough
-                    if (product.logic === 'legacy') factor = (product.payTerm === 5) ? 12 : 20;
-                    sa = premium * factor; 
-                    // Alert user in console or via text that this is estimate
-                }
-            }
+              <div style="width:220px;">
+                <div style="font-size:13px; color:var(--muted)">ฐานภาษี (บาท)</div>
+                <input id="taxBase" type="number" value="100000" style="width:100%; padding:8px; border-radius:6px; border:1px solid #eef4ff;" />
+                <div style="font-size:13px; color:var(--muted); margin-top:8px;">อัตราภาษี (%)</div>
+                <input id="taxRate" type="number" value="10" style="width:100%; padding:8px; border-radius:6px; border:1px solid #eef4ff;" />
+              </div>
+            </div>
 
-            // 2. Generate Insurance Cash Flow
-            // Array index 0 = Year 0 (Today), Index 1 = Year 1 End, etc.
-            let duration = product.protectTerm;
-            // Allow chart to not go too long for Whole Life, cap at 20 years for visibility or full term?
-            // For IRR we need full term. For chart 99 years is too long.
-            // Let's calc IRR on full term, but display chart up to Year 25 or maturity.
-            
-            let insuranceCF = new Array(duration + 1).fill(0);
-            
-            // Pay Premium
-            for (let i = 0; i < product.payTerm; i++) {
-                insuranceCF[i] -= premium;
-            }
+            <div class="row-item" style="margin-top:6px;"><div>ผลประโยชน์ภาษี (approx.)</div><div id="taxBenefit"><strong>- ฿</strong></div></div>
+          </div>
+        </div>
 
-            // Benefits Logic
-            if (product.logic === 'saver_15_6') {
-                for(let i=1; i<=14; i++) insuranceCF[i] += (0.025 * sa);
-                insuranceCF[15] += (1.50 * sa);
-            } 
-            else if (product.logic === 'saver_11_3') {
-                [2,4,6,8,10].forEach(y => insuranceCF[y] += (0.01 * sa));
-                insuranceCF[11] += (3.495 * sa);
-            }
-            else if (product.logic === 'global_index_plus') {
-                [2,4,6,8,10,12,14].forEach(y => insuranceCF[y] += (0.025 * sa));
-                insuranceCF[15] += (5.00 * sa); // Guaranteed part only for conservative calc
-            }
-            else if (product.logic === 'global_index_max') {
-                [2,4,6,8,10,12,14].forEach(y => insuranceCF[y] += (0.01 * sa));
-                insuranceCF[15] += (5.00 * sa); 
-            }
-            else if (product.logic === 'smart_10_5') {
-                for(let i=1; i<=9; i++) insuranceCF[i] += (0.05 * sa);
-                insuranceCF[10] += (5.00 * sa); // Mock logic based on name standard (usually 100% + bonus) -> *Correction from prompt: prompt didn't detail 10/5 logic deeply, assuming standard*
-                // Actually let's use 100% return at end for safety if logic missing.
-                insuranceCF[10] = (1.00 * sa); // Reset to basic if unsure, but let's stick to cashflows inputs provided.
-                // Prompt table didn't detail 10/5 benefits, I will use a placeholder 5% yearly, 200% end for demo or just basic return of premium.
-                // *Re-reading prompt*: 10/5 is in group 2 list but logic detail table omitted. I will use a generic return: 5% yr 1-10, 100% yr 10.
-            }
-            else if (product.logic === 'legacy' || product.logic === 'treasure') {
-                // Whole life usually has cash value or small return.
-                // Prompt says "Treasure: 8% yr 1-87, End 888%".
-                if(product.logic === 'treasure') {
-                    for(let i=1; i<88; i++) insuranceCF[i] += (0.08 * sa);
-                    insuranceCF[88] += (8.88 * sa);
-                } else {
-                    // Legacy 99/5, 99/3: No yearly cash, 100% at 99.
-                    insuranceCF[99] += (1.00 * sa);
-                }
-            }
+        <div class="final-strip">
+          <div class="small" style="margin-bottom:6px;">ผลประโยชน์รวมสุทธิ หลังภาษี (ถ้ามี)</div>
+          <div id="finalNet" class="num">- ฿</div>
+        </div>
 
-            // 3. Generate Deposit Cash Flow
-            let depositCF = new Array(duration + 1).fill(0);
-            if (depositCap > 0) {
-                depositCF[0] -= depositCap;
-                
-                if (option === 'A') { // 36 Months (3 Years)
-                    // Interest paid annually? Or maturity? 
-                    // "Fixed Deposit" usually pays at maturity, but to help "Blended IRR", products often feature monthly/yearly interest.
-                    // Let's assume Annual Simple Interest payout for better visualization.
-                    let annualInt = depositCap * intRate;
-                    depositCF[1] += annualInt;
-                    depositCF[2] += annualInt;
-                    depositCF[3] += (depositCap + annualInt);
-                } else { // 6 Months
-                    // Pays at 6 months. In annual view, this falls in Year 1.
-                    // Interest = Cap * Rate * (6/12)
-                    let interest = depositCap * intRate * (6/12);
-                    depositCF[1] += (depositCap + interest); 
-                    // Note: IRR calculation time period is usually annual in this simple array. 
-                    // Putting it in Year 1 is an approximation.
-                }
-            }
+        <div class="controls">
+          <button id="exportPdf" class="btn primary">ส่งเป็น PDF</button>
+          <button id="downloadCsv" class="btn ghost">ดาวน์โหลด CSV</button>
+        </div>
+      </div>
+    </div>
 
-            // 4. Combine & Calculate
-            let totalCF = [];
-            let netProfit = 0;
-            
-            // Combine arrays (handle different lengths)
-            let maxLen = Math.max(insuranceCF.length, depositCF.length);
-            for(let i=0; i<maxLen; i++) {
-                let ins = insuranceCF[i] || 0;
-                let dep = depositCF[i] || 0;
-                totalCF.push(ins + dep);
-                
-                // Sum Net Profit (Simple Sum of inflows - outflows)
-                netProfit += (ins + dep);
-            }
+    <!-- Insurance content -->
+    <div id="tabInsuranceContent" style="display:none; margin-top:12px;">
+      <h3 style="margin:0;color:var(--navy)">ตารางผลประโยชน์ (ประกัน)</h3>
+      <div class="small" style="color:var(--muted)">ดูผลประโยชน์รายปี — ถ้า period &gt; 20 ปี: แสดง 5 ปีแรก + ... + 5 ปีสุดท้าย</div>
+      <div id="insuranceTableArea" style="margin-top:10px;"></div>
 
-            // Calc IRR
-            let irr = calculateIRR(totalCF);
-            
-            // 5. Display Results
-            document.getElementById('irrResult').innerText = (irr * 100).toFixed(2) + "%";
-            document.getElementById('netProfitResult').innerText = formatMoney(netProfit);
+      <div style="margin-top:12px;">
+        <h4>สรุปประโยชน์ประกัน</h4>
+        <div style="display:flex; gap:12px; margin-top:8px;">
+          <div style="flex:1; background:#fff; padding:12px; border-radius:10px; box-shadow:0 8px 20px rgba(11,18,32,0.04);">
+            <div style="font-size:13px; color:var(--muted)">เบี้ยรวม</div>
+            <div id="sumPremium" style="font-weight:900; margin-top:8px;">- ฿</div>
+          </div>
+          <div style="flex:1; background:#fff; padding:12px; border-radius:10px; box-shadow:0 8px 20px rgba(11,18,32,0.04);">
+            <div style="font-size:13px; color:var(--muted)">เงินคืนรวม</div>
+            <div id="sumGuaranteed" style="font-weight:900; margin-top:8px;">- ฿</div>
+          </div>
+          <div style="flex:1; background:#fff; padding:12px; border-radius:10px; box-shadow:0 8px 20px rgba(11,18,32,0.04);">
+            <div style="font-size:13px; color:var(--muted)">ผลประโยชน์สุทธิ (ประกัน)</div>
+            <div id="sumNetInsurance" style="font-weight:900; margin-top:8px;">- ฿</div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-            // 6. Render Table
-            renderTable(totalCF, insuranceCF, depositCF, premium, depositCap, option);
+    <!-- Deposit content -->
+    <div id="tabDepositContent" style="display:none; margin-top:12px;">
+      <h3 style="margin:0;color:var(--navy)">ตารางผลประโยชน์ (เงินฝาก)</h3>
+      <div id="depositTableArea" style="margin-top:10px;"></div>
 
-            // 7. Render Chart
-            renderChart(totalCF);
-        }
+      <div style="margin-top:12px; display:flex; gap:12px;">
+        <div style="flex:1; background:#fff; padding:12px; border-radius:10px; box-shadow:0 8px 20px rgba(11,18,32,0.04);">
+          <div style="font-size:13px; color:var(--muted)">ดอกเบี้ยรวม (ก่อนภาษี)</div>
+          <div id="depositGross" style="font-weight:900; margin-top:8px;">- ฿</div>
+        </div>
+        <div style="flex:1; background:#fff; padding:12px; border-radius:10px; box-shadow:0 8px 20px rgba(11,18,32,0.04);">
+          <div style="font-size:13px; color:var(--muted)">ดอกเบี้ยรวม (หลังหักภาษี 15%)</div>
+          <div id="depositNet" style="font-weight:900; margin-top:8px;">- ฿</div>
+        </div>
+      </div>
+    </div>
 
-        function renderTable(total, ins, dep, premium, deposit, option) {
-            const tbody = document.querySelector('#cfTable tbody');
-            tbody.innerHTML = '';
-            
-            // Limit table rows for long products (e.g., up to year 15 or 20)
-            let limit = Math.min(total.length, 20); 
-            
-            for(let i=0; i<limit; i++) {
-                if (total[i] === 0 && i > 0) continue; // Skip empty years if any
-                
-                let rowClass = (total[i] > 0) ? "text-success" : ((total[i] < 0) ? "text-danger" : "");
-                
-                // Determine Outflow display
-                let outflow = 0;
-                if (i === 0) outflow = -(premium + deposit);
-                else if (ins[i] < 0) outflow = ins[i]; // Premium paying years
-                
-                // Determine Inflow display
-                let insIn = (ins[i] > 0) ? ins[i] : 0;
-                let depIn = (dep[i] > 0) ? dep[i] : 0;
+  </div>
 
-                let tr = `
-                    <tr>
-                        <td>${i}</td>
-                        <td class="text-danger">${(outflow !== 0) ? formatMoney(outflow) : "-"}</td>
-                        <td>${(insIn !== 0) ? formatMoney(insIn) : "-"}</td>
-                        <td class="text-primary">${(depIn !== 0) ? formatMoney(depIn) : "-"}</td>
-                        <td class="${rowClass} fw-bold">${formatMoney(total[i])}</td>
-                    </tr>
-                `;
-                tbody.insertAdjacentHTML('beforeend', tr);
-            }
-            
-            if(total.length > 20) {
-                 tbody.insertAdjacentHTML('beforeend', `<tr><td colspan="5" class="text-center text-muted">... (ข้อมูลปีถัดไปซ่อนไว้เพื่อความกระชับ) ...</td></tr>`);
-            }
-        }
+</div>
 
-        function renderChart(totalCF) {
-            const ctx = document.getElementById('wealthChart').getContext('2d');
-            
-            // Calculate Cumulative Wealth
-            let cumulative = [];
-            let sum = 0;
-            let labels = [];
-            
-            // Limit chart to 20 years for better view
-            let limit = Math.min(totalCF.length, 20);
+<script>
+/* ---------------------------
+  PRODUCTS & RATES (Logic Engine)
+  - Use these data structures for SA, benefits, pay terms, etc.
+  - Replace AGE_RATE with Actuary tables for production.
+-----------------------------*/
+const PRODUCTS = {
+  wealth: [
+    { code:'global_index_plus', name:'ทีทีบี โกลบอล อินเด็กซ์ พรินซิเพิล โพรเทค 15/5 พลัส', pay_term:5, cover_term:15, fixed_rate_per_1000:1000,
+      benefits:[{year:2,pct:2.5},{year:4,pct:2.5},{year:6,pct:2.5},{year:8,pct:2.5},{year:10,pct:2.5},{year:12,pct:2.5},{year:14,pct:2.5},{year:15,pct:500}] },
+    { code:'global_index_max', name:'ทีทีบี โกลบอล อินเด็กซ์ 15/5 แม็กซ์', pay_term:5, cover_term:15, fixed_rate_per_1000:1000,
+      benefits:[{year:2,pct:1},{year:4,pct:1},{year:6,pct:1},{year:8,pct:1},{year:10,pct:1},{year:12,pct:1},{year:14,pct:1},{year:15,pct:500}] },
+    { code:'wealth_99_5', name:'ทีทีบี ส่งต่อความมั่งคั่ง 99/5', pay_term:5, cover_term:99, variable:true, benefits:[{year:99,pct:100}] },
+    { code:'happy_life', name:'ทีทีบี แฮปปี้ ไลฟ์ โพรเทค', pay_term:5, cover_term:99, variable:true, benefits:[{year:99,pct:100}] },
+    { code:'ultimate_99_3', name:'ทีทีบี อัลติเมท เลกาซี 99/3', pay_term:3, cover_term:99, variable:true, benefits:[{year:99,pct:100}] },
+    { code:'treasure_all', name:'ทีทีบี เดอะ เทรเชอร์ (ทุกแผน)', pay_term:8, cover_term:88, variable:true, usp:'มรดก + บำนาญ รับเงินคืนต่อเนื่อง', benefits:[] }
+  ],
+  saving: [
+    { code:'money_saver_14_6', name:'ทีทีบี มันนี่ เซฟเวอร์ 14/6', pay_term:6, cover_term:14, variable:true, benefits:[...Array.from({length:13},(_,i)=>({year:i+1,pct:2.3})), {year:14,pct:140}] },
+    { code:'smart_bonus_10_5', name:'ทีทีบี สมาร์ท โบนัส 10/5', pay_term:5, cover_term:10, fixed_rate_per_1000:1000, benefits:[{year:2,pct:1},{year:4,pct:1},{year:6,pct:1},{year:8,pct:1},{year:10,pct:100}]},
+    { code:'money_saver_15_6', name:'ทีทีบี มันนี่ เซฟเวอร์ 15/6', pay_term:6, cover_term:15, variable:true, benefits:[...Array.from({length:14},(_,i)=>({year:i+1,pct:2.5})), {year:15,pct:150}]},
+    { code:'premium_saver_11_3', name:'ทีทีบี พรีเมียม เซฟเวอร์ 11/3', pay_term:3, cover_term:11, fixed_rate_per_1000:1000, benefits:[{year:2,pct:1},{year:4,pct:1},{year:6,pct:1},{year:8,pct:1},{year:10,pct:1},{year:11,pct:349.5}]}
+  ]
+};
 
-            for(let i=0; i<limit; i++) {
-                sum += totalCF[i];
-                cumulative.push(sum);
-                labels.push(`ปีที่ ${i}`);
-            }
+const PROMO_MULTIPLIERS = { wealth: {A:20,B:15}, saving: {A:10,B:7.5} };
+const DEFAULT_TD = { '36':1.50, '6':1.25 };
 
-            if (myChart) myChart.destroy();
+/* sample AGE_RATE (placeholder): replace with Actuary table */
+const AGE_RATE = {
+  money_saver_15_6: (age)=> { if(age<=40) return 260; if(age<=45) return 265; if(age<=50) return 270; if(age<=55) return 275; if(age<=60) return 280; return 294; },
+  money_saver_14_6: (age)=> { if(age<=40) return 255; if(age<=45) return 260; if(age<=50) return 265; if(age<=55) return 270; return 300; },
+  wealth_99_5: (age)=> Math.max(800,1000 + (age-30)*10),
+  happy_life: (age)=> Math.max(800,1000 + (age-30)*12),
+  ultimate_99_3: (age)=> Math.max(900,1000 + (age-30)*14),
+  treasure_all: (age)=> Math.max(900,1000 + (age-30)*12)
+};
 
-            myChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'มูลค่าสุทธิสะสม (Cumulative Net Wealth)',
-                        data: cumulative,
-                        borderColor: '#FFC300',
-                        backgroundColor: 'rgba(255, 195, 0, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: { position: 'top' },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return '฿ ' + formatMoney(context.raw);
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            ticks: {
-                                callback: function(value) { return formatMoney(value); }
-                            }
-                        }
-                    }
-                }
-            });
-        }
+/* helpers */
+function money(x){ return Number(x).toLocaleString('en-US',{minimumFractionDigits:2, maximumFractionDigits:2}); }
+function daysBetween(d1,d2){ return (d2 - d1) / (1000*60*60*24); }
 
-        // Init
-        document.addEventListener('DOMContentLoaded', () => {
-            updateFormLogic();
-        });
+/* xnpv and numeric solver (Brent) */
+function xnpv(rate, cfs){
+  const ref = cfs.reduce((a,b)=> a.date < b.date ? a : b.date, cfs[0].date);
+  return cfs.reduce((acc,it)=> {
+    const t = daysBetween(ref, it.date)/365;
+    return acc + it.cf / Math.pow(1 + rate, t);
+  }, 0);
+}
 
-    </script>
+function brent(f,a,b,tol=1e-12,maxIter=200){
+  let fa=f(a), fb=f(b);
+  if(!isFinite(fa) || !isFinite(fb)) return null;
+  if(fa === 0) return a; if(fb === 0) return b;
+  if(fa * fb > 0) return null;
+  let c=a, fc=fa, d=b-a, e=d;
+  for(let iter=0; iter<maxIter; iter++){
+    if(fb === 0) return b;
+    if(fa * fb > 0){ a=c; fa=fc; d=b-c; e=d; }
+    if(Math.abs(fa) < Math.abs(fb)){ c=b; b=a; a=c; fc=fb; fb=fa; fa=fc; }
+    const tol1 = 2.220446049250313e-16 * Math.abs(b) + tol/2;
+    const xm = (a-b)/2;
+    if(Math.abs(xm) <= tol1 || fb === 0) return b;
+    if(Math.abs(e) >= tol1 && Math.abs(fc) > Math.abs(fb)){
+      let s = fb/fc, p, q;
+      if(a === c){ p = 2 * xm * s; q = 1 - s; }
+      else { q = fc/fa; const r = fb/fa; p = s * (2*xm * q * (q - r) - (b - c)*(r -1)); q = (q -1)*(r -1)*(s -1); }
+      if(p > 0) q = -q; else p = -p;
+      const min1 = 3 * xm * q - Math.abs(tol1 * q);
+      const min2 = Math.abs(e * q);
+      if(2*p < (min1 < min2 ? min1 : min2)) { e = d; d = p / q; } else { d = xm; e = d; }
+    } else { d = xm; e = d; }
+    a = b; fa = fb;
+    if(Math.abs(d) > tol1) b += d; else b += (xm > 0 ? tol1 : -tol1);
+    fb = f(b);
+    if((fb > 0 && fc > 0) || (fb < 0 && fc < 0)){ c = a; fc = fa; d = b - a; e = d; }
+  }
+  return null;
+}
+
+function findXIRRs(cfs){
+  const f = r => xnpv(r, cfs);
+  const roots = [];
+  const minR = -0.999999, maxR = 20, steps = 600;
+  let prevR = minR; let prevF = f(prevR); const del = (maxR - minR) / steps;
+  for(let i=1;i<=steps;i++){
+    const r = minR + i*del; let fr;
+    try{ fr = f(r); } catch(e){ fr = NaN; }
+    if(isFinite(fr) && isFinite(prevF)){
+      if(prevF === 0) roots.push(prevR);
+      else if(prevF * fr < 0){
+        const root = brent(f, prevR, r, 1e-12, 200);
+        if(root !== null && isFinite(root)) if(!roots.some(rt=>Math.abs(rt-root)<1e-9)) roots.push(root);
+      }
+    }
+    prevR = r; prevF = fr;
+  }
+  return roots.sort((a,b)=>a-b);
+}
+
+/* Equivalent savings rate (FV of annual premiums) */
+function findEquivalentRate(premium, years, target){
+  if(years <= 0) return null;
+  const f = r => {
+    let fv = 0;
+    for(let k=0;k<years;k++){
+      fv += premium * Math.pow(1 + r, years -1 - k);
+    }
+    return fv - target;
+  };
+  let a = -0.9999, b = 1.0;
+  let fa = f(a), fb = f(b);
+  for(let i=0;i<60 && fa*fb > 0; i++){ b *= 2; fb = f(b); }
+  if(fa*fb > 0) return null;
+  const root = brent(f, a, b, 1e-10, 200);
+  return root;
+}
+
+/* Build cashflows: premiums outflows, insurance inflows, deposit outflow & maturity inflow */
+function estimateSA(product, premium, age){
+  if(product.fixed_rate_per_1000){
+    return (premium / product.fixed_rate_per_1000) * 1000;
+  } else {
+    const fn = AGE_RATE[product.code] || AGE_RATE[product.code.replace(/[^a-z0-9_]/gi,'')];
+    if(typeof fn === 'function') return (premium / fn(age)) * 1000;
+    return premium;
+  }
+}
+
+function buildCashflows(product, premium, saInput, age, promoChoice, promoMonths, multiplier){
+  const today = new Date();
+  const cfs = [];
+  // premiums (annual) — assume at policy anniversary t=0..pay_term-1
+  for(let y=0;y<product.pay_term;y++){
+    const d = new Date(today.getFullYear()+y, today.getMonth(), today.getDate());
+    cfs.push({date:d, cf:-premium, tag:'premium'});
+  }
+  const SA = (saInput && saInput>0) ? saInput : estimateSA(product, premium, age);
+  (product.benefits || []).forEach(b=>{
+    const d = new Date(today.getFullYear() + b.year, today.getMonth(), today.getDate());
+    const amt = SA * (b.pct/100);
+    cfs.push({date:d, cf: amt, tag:'insurance'});
+  });
+  // deposit principal (customer deposits) - assume deposit occurs at today
+  let depositAmount = premium * multiplier;
+  if(product && product.group === 'saving'){ depositAmount = Math.min(depositAmount, 200_000_000); }
+  cfs.push({date: today, cf:-depositAmount, tag:'deposit-principal'});
+  // deposit maturity
+  const matDate = new Date(today.getFullYear(), today.getMonth() + Number(promoMonths), today.getDate());
+  const tdRate = DEFAULT_TD[String(promoMonths)] || 1.25;
+  const years = daysBetween(today, matDate)/365;
+  const matAmount = depositAmount * Math.pow(1 + tdRate/100, years);
+  cfs.push({date: matDate, cf: matAmount, tag:'deposit-maturity'});
+  return { cfs, SA, depositAmount, matAmount, matDate, today, tdRate };
+}
+
+/* Render/UI wiring */
+const prodWrap = document.getElementById('prodWrap');
+const btnWealth = document.getElementById('btnWealth'), btnSaving = document.getElementById('btnSaving');
+const page1 = document.getElementById('page1'), page2 = document.getElementById('page2'), page3 = document.getElementById('page3');
+const dot1 = document.getElementById('dot1'), dot2 = document.getElementById('dot2'), dot3 = document.getElementById('dot3');
+
+let activeGroup = null;
+let selectedProduct = null;
+
+function clearSelectionButtons(){
+  btnWealth.classList.remove('active'); btnSaving.classList.remove('active');
+  btnWealth.classList.remove('dim'); btnSaving.classList.remove('dim');
+}
+
+btnWealth.addEventListener('click', ()=>{
+  clearSelectionButtons();
+  activeGroup = 'wealth';
+  btnWealth.classList.add('active');
+  btnSaving.classList.add('dim');
+  showProducts('wealth');
+});
+btnSaving.addEventListener('click', ()=>{
+  clearSelectionButtons();
+  activeGroup = 'saving';
+  btnSaving.classList.add('active');
+  btnWealth.classList.add('dim');
+  showProducts('saving');
+});
+
+function showProducts(group){
+  prodWrap.innerHTML = '';
+  const list = PRODUCTS[group];
+  list.forEach((p, idx) => {
+    const el = document.createElement('div'); el.className = 'pro-card enter';
+    el.innerHTML = `<div style="font-weight:800">${p.name}</div><div class="small" style="margin-top:6px;color:${p.variable?'#6b7280':'#6b7280'}">ระยะชำระ: ${p.pay_term} ปี • คุ้มครอง: ${p.cover_term} ปี</div><div class="usp" id="usp-${p.code}">${p.usp ? '<div style="margin-top:8px;color:var(--muted)">'+p.usp+'</div>':''}<div style="margin-top:8px;"><em class="small">เงินคืนตัวอย่าง (guaranteed): ${p.benefits && p.benefits.length? p.benefits.map(b=> b.year===p.cover_term? (b.pct+'% at maturity') : (b.pct+'% at Y'+b.year)).slice(0,3).join(', ') : '-'}</em></div></div>`;
+    el.onclick = ()=>{
+      // mark selected
+      Array.from(prodWrap.children).forEach(ch=> ch.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedProduct = Object.assign({}, p, { group });
+      // open USP area
+      const uspEls = document.querySelectorAll('.usp'); uspEls.forEach(u=> u.classList.remove('open'));
+      const usp = el.querySelector('.usp'); if(usp) usp.classList.add('open');
+      // dim others
+      Array.from(prodWrap.children).forEach(ch=> { if(!ch.classList.contains('selected')) ch.classList.add('dim'); else ch.classList.remove('dim'); });
+    };
+    prodWrap.appendChild(el);
+  });
+}
+
+/* navigation */
+function gotoPage(n){
+  [page1,page2,page3].forEach(p=> p.classList.remove('active'));
+  [dot1,dot2,dot3].forEach(d=> d.classList.remove('active'));
+  if(n===1){ page1.classList.add('active'); dot1.classList.add('active'); }
+  if(n===2){ page2.classList.add('active'); dot2.classList.add('active'); }
+  if(n===3){ page3.classList.add('active'); dot3.classList.add('active'); }
+}
+
+document.getElementById('page1Next').addEventListener('click', ()=>{
+  if(!selectedProduct){ alert('กรุณาเลือกผลิตภัณฑ์ก่อน'); return; }
+  gotoPage(2);
+  updateAutoInfo();
+});
+
+document.getElementById('backTo1').addEventListener('click', ()=> gotoPage(1));
+document.getElementById('backTo2').addEventListener('click', ()=> gotoPage(2));
+
+/* page2 controls */
+const inputPremium = document.getElementById('inputPremium'), inputSA = document.getElementById('inputSA'), inputAge = document.getElementById('inputAge'), inputSex = document.getElementById('inputSex');
+const promoA = document.getElementById('promoA'), promoB = document.getElementById('promoB'), promoMonths = document.getElementById('promoMonths');
+const multSlider = document.getElementById('multSlider'), multValue = document.getElementById('multValue'), autoInfo = document.getElementById('autoInfo');
+promoA.addEventListener('click', ()=> { promoA.classList.add('active'); promoB.classList.remove('active'); promoMonths.value='36'; updateAutoInfo(); });
+promoB.addEventListener('click', ()=> { promoB.classList.add('active'); promoA.classList.remove('active'); promoMonths.value='6'; updateAutoInfo(); });
+multSlider.addEventListener('input', ()=> multValue.innerText = multSlider.value + 'x');
+document.getElementById('page2Reset').addEventListener('click', ()=>{
+  inputPremium.value=100000; inputSA.value=''; inputAge.value=38; inputSex.value='M';
+  multSlider.value=10; multValue.innerText='10x'; promoMonths.value='36'; promoA.classList.remove('active'); promoB.classList.remove('active');
+  updateAutoInfo();
+});
+
+function updateAutoInfo(){
+  const premium = Number(inputPremium.value||0);
+  if(!selectedProduct){ autoInfo.innerHTML = '<span style="color:#c0392b">กรุณาเลือกผลิตภัณฑ์ก่อน</span>'; return; }
+  const group = selectedProduct.group || activeGroup;
+  const choice = promoMonths.value === '36' ? 'A' : 'B';
+  const allowed = PROMO_MULTIPLIERS[group][choice];
+  const capText = (group === 'saving') ? ' (แต่ไม่เกิน 200,000,000 บาท)' : '';
+  const eligible = premium >= 50000;
+  autoInfo.innerHTML = `ระบบคำนวณอัตโนมัติ: โปรโมชั่นที่เป็นไปได้: <strong>TD ${promoMonths.value} เดือน</strong>. ฝากได้สูงสุด <strong>${allowed} เท่า</strong> ${capText}. ${eligible ? '' : '<span style="color:#c0392b">หมายเหตุ: หากเบี้ยน้อยกว่า 50,000 บาท จะไม่ได้รับสิทธิ์ฝากพิเศษ</span>'}`;
+}
+
+/* calculation and render results */
+function renderResults(){
+  const premium = Number(inputPremium.value||0);
+  const saInput = Number(inputSA.value||0);
+  const age = Number(inputAge.value||0);
+  const sex = inputSex.value;
+  const promoChoice = promoMonths.value === '36' ? 'A' : 'B';
+  const promoMonthsVal = Number(promoMonths.value);
+  const multiplierVal = Number(multSlider.value);
+  if(!selectedProduct){ alert('No product selected'); gotoPage(1); return; }
+  if(premium <= 0){ alert('กรุณากรอกเบี้ยประกัน'); gotoPage(2); return; }
+
+  selectedProduct.group = selectedProduct.group || activeGroup;
+
+  const built = buildCashflows(selectedProduct, premium, saInput, age, promoChoice, promoMonthsVal, multiplierVal);
+  const cfs = built.cfs;
+
+  // XIRR
+  const roots = findXIRRs(cfs);
+  let irr = null, meta = '';
+  if(roots.length === 0) meta = 'ไม่พบ IRR';
+  else if(roots.length === 1){ irr = roots[0]; meta = 'single root'; }
+  else { irr = roots[roots.length-1]; meta = 'multiple roots - showing highest'; }
+
+  // totals
+  const inflows = cfs.filter(it=>it.cf>0).reduce((a,b)=>a+b.cf,0);
+  const outflows = cfs.filter(it=>it.cf<0).reduce((a,b)=>a+Math.abs(b.cf),0);
+  const net = inflows - outflows;
+
+  // insurance figures
+  const insuranceInflows = cfs.filter(it=>it.tag==='insurance').reduce((a,b)=>a+b.cf,0);
+  const premiumsPaid = cfs.filter(it=>it.tag==='premium').reduce((a,b)=>a+Math.abs(b.cf),0);
+  const insuranceNet = insuranceInflows - premiumsPaid;
+
+  // deposit
+  const depositPrincipal = Math.abs(cfs.find(it=>it.tag==='deposit-principal').cf);
+  const depositMat = cfs.find(it=>it.tag==='deposit-maturity').cf;
+  const depositInterestGross = Math.max(0, depositMat - depositPrincipal);
+  const depositInterestNet = depositInterestGross * (1 - 0.15);
+
+  // equivalent rate
+  const horizonYears = Math.max(selectedProduct.cover_term || 15, Math.ceil((built.matDate - built.today)/(1000*60*60*24*365)));
+  const equiv = findEquivalentRate(premium, horizonYears, inflows);
+
+  // tax
+  const useTax = document.getElementById('useTax').checked;
+  const taxBase = Number(document.getElementById('taxBase').value||0);
+  const taxRate = Number(document.getElementById('taxRate').value||0)/100;
+  const taxSaving = useTax ? Math.min(premiumsPaid, taxBase) * taxRate : 0;
+
+  // render to UI
+  document.getElementById('outTotal').innerText = money(net) + ' ฿';
+  document.getElementById('outInsurance').innerText = money(Math.max(0,insuranceNet)) + ' ฿';
+  document.getElementById('outDeposit').innerText = money(depositInterestNet) + ' ฿';
+  document.getElementById('outPayTerm').innerText = selectedProduct.pay_term + ' ปี';
+  document.getElementById('outCover').innerText = selectedProduct.cover_term + ' ปี';
+  document.getElementById('outTdRate').innerText = (built.tdRate || 0).toFixed(2) + '%';
+  document.getElementById('outTdMonths').innerText = (promoMonthsVal) + ' เดือน';
+  document.getElementById('outIrr').innerText = (irr === null ? 'N/A' : ( (irr*100).toFixed(4) + '%' )) ;
+  document.getElementById('outEquiv').innerText = (equiv === null ? 'N/A' : ((equiv*100).toFixed(4) + '%'));
+  document.getElementById('transIrr').innerHTML = '<strong>' + (irr === null ? 'N/A' : ((irr*100).toFixed(4) + '%')) + '</strong>';
+  document.getElementById('transEquiv').innerHTML = '<strong>' + (equiv === null ? 'N/A' : ((equiv*100).toFixed(4) + '%')) + '</strong>';
+  document.getElementById('taxBenefit').innerHTML = '<strong>' + money(taxSaving) + ' ฿</strong>';
+  document.getElementById('finalNet').innerText = money(net + taxSaving) + ' ฿';
+  document.getElementById('outIrr').setAttribute('title', meta);
+
+  // insurance table
+  renderInsuranceTable(cfs, built, selectedProduct, premium, age);
+
+  // deposit table
+  renderDepositTable(depositPrincipal, depositMat, depositInterestGross, depositInterestNet, built);
+
+  // populate summary numbers used in CSV
+  lastResult = { built, cfs, irr, net, insuranceNet, depositInterestGross, depositInterestNet, premiumsPaid, taxSaving, equiv };
+  gotoPage(3);
+}
+
+/* render insurance table with >20 rule */
+let lastResult = null;
+function renderInsuranceTable(cfs, built, product, premium, age){
+  const refYear = built.today.getFullYear();
+  const yearMap = {};
+  cfs.forEach(it=>{
+    const yr = it.date.getFullYear() - refYear;
+    if(!yearMap[yr]) yearMap[yr] = [];
+    yearMap[yr].push(it);
+  });
+  const years = Object.keys(yearMap).map(x=>parseInt(x)).sort((a,b)=>a-b);
+  const maxYear = years.length ? years[years.length-1] : (product.cover_term || 15);
+  let html = '';
+  if(maxYear > 20){
+    const first5 = Array.from({length:5},(_,i)=>i);
+    const last5 = Array.from({length:5},(_,i)=> maxYear -4 + i);
+    html += `<div><strong>5 ปีแรก</strong>` + buildInsuranceTable(first5, yearMap, built, premium, age) + `</div>`;
+    html += `<div style="margin-top:8px;"><strong>5 ปีสุดท้าย</strong>` + buildInsuranceTable(last5, yearMap, built, premium, age) + `</div>`;
+    html += `<div style="margin-top:8px;"><button id="showInsuranceAll" class="btn ghost">แสดงปีทั้งหมด</button></div>`;
+  } else {
+    const all = Array.from({length:maxYear+1},(_,i)=>i);
+    html += buildInsuranceTable(all, yearMap, built, premium, age);
+  }
+  document.getElementById('insuranceTableArea').innerHTML = html;
+  const btn = document.getElementById('showInsuranceAll');
+  if(btn) btn.addEventListener('click', ()=> {
+    const all = Array.from({length:maxYear+1},(_,i)=>i);
+    document.getElementById('insuranceTableArea').innerHTML = buildInsuranceTable(all, yearMap, built, premium, age);
+  });
+}
+
+function buildInsuranceTable(yearsArr, yearMap, built, premium, age){
+  let html = `<table style="width:100%;border-collapse:collapse;"><thead><tr style="text-align:left;"><th>ปี</th><th>อายุ</th><th style="text-align:right">เบี้ยจ่าย/ปี</th><th style="text-align:right">จำนวนเงินคืน</th></tr></thead><tbody>`;
+  yearsArr.forEach(y=>{
+    const items = yearMap[y] || [];
+    const prem = items.filter(it=>it.tag==='premium').reduce((a,b)=>a+Math.abs(b.cf),0);
+    const ins = items.filter(it=>it.tag==='insurance').reduce((a,b)=>a+b.cf,0);
+    html += `<tr><td>${y}</td><td>${age + y}</td><td style="text-align:right">${prem?money(prem)+' ฿':'-'}</td><td style="text-align:right">${ins?money(ins)+' ฿':'-'}</td></tr>`;
+  });
+  html += `</tbody></table>`;
+  return html;
+}
+
+/* deposit table */
+function renderDepositTable(principal, matAmount, grossInterest, netInterest, built){
+  let html = `<table style="width:100%;border-collapse:collapse;"><thead><tr style="text-align:left;"><th>รายการ</th><th style="text-align:right">จำนวน (บาท)</th><th>หมายเหตุ</th></tr></thead><tbody>`;
+  html += `<tr><td>เงินต้น (ฝากพิเศษ)</td><td style="text-align:right">${money(principal)} ฿</td><td>-</td></tr>`;
+  html += `<tr><td>ยอดเมื่อครบ</td><td style="text-align:right">${money(matAmount)} ฿</td><td>ครบหลัง ${Math.round(daysBetween(built.today,built.matDate)/365*100)/100} ปี</td></tr>`;
+  html += `<tr><td>ดอกเบี้ยรวม (ก่อนหักภาษี)</td><td style="text-align:right">${money(grossInterest)} ฿</td><td>-</td></tr>`;
+  html += `<tr><td>ดอกเบี้ยหลังหักภาษี 15%</td><td style="text-align:right">${money(netInterest)} ฿</td><td>-</td></tr>`;
+  html += `</tbody></table>`;
+  html += `<div style="margin-top:8px;" class="small">สรุป: ดอกเบี้ยรวมหลังหักภาษี (ไม่รวมเงินต้น) = <strong>${money(netInterest)} ฿</strong></div>`;
+  document.getElementById('depositTableArea').innerHTML = html;
+}
+
+/* exports - CSV & PDF */
+document.getElementById('downloadCsv').addEventListener('click', ()=>{
+  if(!lastResult){ alert('ไม่มีผลลัพธ์ให้ดาวน์โหลด'); return; }
+  const rows=[['date','tag','cashflow']];
+  lastResult.cfs.forEach(it=> rows.push([it.date.toISOString().split('T')[0], it.tag, it.cf]));
+  const csv = rows.map(r=> r.join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'smilehigh_cfs.csv'; a.click(); URL.revokeObjectURL(url);
+});
+
+document.getElementById('exportPdf').addEventListener('click', ()=>{
+  const el = document.querySelector('.app');
+  const opt = {
+    margin:       [10,10,10,10],
+    filename:     'SmileHigh_Summary.pdf',
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS:true },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+  html2pdf().set(opt).from(el).save();
+});
+
+/* tab switching */
+document.getElementById('tabSummary').addEventListener('click', ()=> { showTab('summary'); });
+document.getElementById('tabInsurance').addEventListener('click', ()=> { showTab('insurance'); });
+document.getElementById('tabDeposit').addEventListener('click', ()=> { showTab('deposit'); });
+function showTab(k){
+  document.getElementById('tabSummaryContent').style.display = 'none';
+  document.getElementById('tabInsuranceContent').style.display = 'none';
+  document.getElementById('tabDepositContent').style.display = 'none';
+  document.getElementById('tabSummary').classList.remove('ghost');
+  document.getElementById('tabInsurance').classList.remove('ghost');
+  document.getElementById('tabDeposit').classList.remove('ghost');
+  document.getElementById('tabSummary').classList.remove('primary');
+  document.getElementById('tabInsurance').classList.remove('primary');
+  document.getElementById('tabDeposit').classList.remove('primary');
+  if(k==='summary'){ document.getElementById('tabSummaryContent').style.display='block'; document.getElementById('tabSummary').classList.add('primary'); }
+  if(k==='insurance'){ document.getElementById('tabInsuranceContent').style.display='block'; document.getElementById('tabInsurance').classList.add('primary'); }
+  if(k==='deposit'){ document.getElementById('tabDepositContent').style.display='block'; document.getElementById('tabDeposit').classList.add('primary'); }
+}
+
+/* wire calculate button */
+document.getElementById('page2Next').addEventListener('click', ()=> {
+  updateAutoInfo();
+  renderResults();
+});
+
+/* initial UI */
+showTab('summary');
+
+/* bonus: CSV/JSON download of product list */
+function exportProductsJSON(){
+  const data = { products: PRODUCTS };
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download='products.json'; a.click(); URL.revokeObjectURL(url);
+}
+
+/* small: show products for initial demo (auto open wealth) */
+btnWealth.click();
+updateAutoInfo();
+
+/* Optional: allow pressing Enter in premium to calculate */
+document.getElementById('inputPremium').addEventListener('keydown', (e)=> { if(e.key==='Enter'){ renderResults(); } });
+
+</script>
 </body>
 </html>
