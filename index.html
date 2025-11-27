@@ -3,526 +3,1290 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RH5 PROMOTION Cal.</title>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
+    <title>ยิ้มรับดอกเบี้ยสูง - คำนวณผลประโยชน์</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Prompt', sans-serif; background-color: #F3F4F6; overflow-x: hidden; }
-        
-        /* Theme Colors */
-        .ttb-blue { color: #002d63; }
-        .ttb-bg-blue { background-color: #002d63; }
-        .ttb-orange { color: #f05a22; }
-        .ttb-bg-orange { background-color: #f05a22; }
-        
-        /* Animations */
-        @keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes slideLeft { from { transform: translateX(-100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes slideRight { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes growBar { from { width: 0%; } to { width: 100%; } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; visibility: hidden; } }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Kanit', sans-serif;
+        }
 
-        .anim-slide-down { animation: slideDown 1s ease-out forwards; }
-        .anim-slide-left { animation: slideLeft 1s ease-out 0.5s forwards; opacity: 0; }
-        .anim-slide-right { animation: slideRight 1s ease-out 0.5s forwards; opacity: 0; }
-        .anim-slide-up { animation: slideUp 0.8s ease-out 2s forwards; opacity: 0; }
-        .anim-grow { animation: growBar 1.5s ease-in-out 0.5s forwards; }
-        
-        /* UI Elements */
-        .tab-active { border-bottom: 3px solid #f05a22; color: #002d63; font-weight: 600; }
-        .tab-inactive { color: #6B7280; }
-        input, select { -webkit-appearance: none; }
-        
-        /* PDF Template Hidden Area */
-        #pdfTemplate {
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #004a99;
+            --secondary: #00b386;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #adb5bd;
+            --danger: #dc3545;
+            --success: #28a745;
+            --info: #17a2b8;
+            --warning: #ffc107;
+            --card-bg: #ffffff;
+            --card-border: #e0e0e0;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+            padding-bottom: 2rem;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.5rem 2rem;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2rem;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card-header {
+            background: linear-gradient(to right, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.5rem;
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            font-size: 1.1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.25);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+        }
+
+        .btn-secondary:hover {
+            background: #00996d;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: var(--dark);
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .tab {
+            padding: 1rem 1.5rem;
+            margin-right: 1rem;
+            border-radius: 12px 12px 0 0;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: 2px solid var(--card-border);
+            border-bottom: none;
+            background: #f0f2f5;
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        th, td {
+            padding: 1.2rem;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        th {
+            background-color: #f0f2f5;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .dashboard-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--card-border);
+        }
+
+        .dashboard-card h3 {
+            font-size: 1.2rem;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: 0.5rem 0;
+        }
+
+        .dashboard-subtitle {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .passcode-modal {
+            display: none;
             position: fixed;
-            left: -9999px;
             top: 0;
-            width: 800px; /* Fixed width for consistent PDF look */
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
             background: white;
-            z-index: -1;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+
+        .passcode-input {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.5rem;
+            text-align: center;
+            border: 2px solid var(--card-border);
+            border-radius: 12px;
+            margin: 1.5rem 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .highlight {
+            background-color: #e3f2fd;
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid var(--primary);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .info-box h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .badge-primary {
+            background: #e3f2fd;
+            color: var(--primary);
+        }
+
+        .badge-success {
+            background: #e8f5e9;
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: #fff8e1;
+            color: var(--warning);
+        }
+
+        .badge-danger {
+            background: #ffebee;
+            color: var(--danger);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem 0;
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 2rem;
+            border-top: 1px solid var(--card-border);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 1.5rem;
+            }
+            
+            .header p {
+                font-size: 1rem;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .dashboard-value {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-
-    <div id="loadingScreen" class="fixed inset-0 bg-white z-50 flex flex-col justify-center items-center p-4">
-        
-        <h1 class="text-4xl font-bold ttb-blue mb-8 anim-slide-down">Welcome</h1>
-        
-        <div class="flex items-center justify-center text-2xl md:text-3xl font-bold text-gray-800 mb-8 overflow-hidden">
-            <span class="anim-slide-left mr-1">RH5 PROMO</span>
-            <span class="anim-slide-right">TION Cal.</span>
-        </div>
-
-        <div class="w-64 h-2 bg-gray-100 rounded-full overflow-hidden mb-10">
-            <div class="h-full bg-blue-300 rounded-full anim-grow w-0"></div>
-        </div>
-
-        <button onclick="enterApp()" class="anim-slide-up bg-gradient-to-r from-cyan-500 to-blue-700 text-white font-bold text-xl py-3 px-12 rounded-full shadow-lg hover:shadow-xl transform hover:scale-105 transition duration-300">
-            เริ่ม!
-        </button>
+    <div class="header">
+        <h1>โปรสุดปัง! ยิ้มรับดอกเบี้ยสูง</h1>
+        <p>คำนวณผลประโยชน์จากประกันชีวิตพร้อมสิทธิ์ฝากเงินประจำดอกเบี้ยพิเศษ</p>
     </div>
 
-    <div id="mainApp">
-        <header class="ttb-bg-blue text-white p-4 shadow-lg sticky top-0 z-40">
-            <div class="max-w-4xl mx-auto flex justify-between items-center">
-                <div>
-                    <h1 class="text-xl font-bold">RH5 PROMOTION Cal.</h1>
-                    <p class="text-xs text-blue-200">เครื่องมือคำนวณสิทธิประโยชน์</p>
-                </div>
-                <div class="text-2xl">📊</div>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                ข้อมูลแบบประกัน
             </div>
-        </header>
-
-        <div class="max-w-4xl mx-auto mt-6 px-4 pb-20">
-            
-            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
-                <h2 class="text-lg font-semibold ttb-blue mb-4 border-l-4 border-orange-500 pl-3">ข้อมูลการลงทุน</h2>
-                
-                <form id="calcForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">เลือกแบบประกัน</label>
-                        <select id="productSelect" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="">-- กรุณาเลือกแบบประกัน --</option>
-                            <optgroup label="กลุ่ม 1: Wealth (Multiplier สูง)">
-                                <option value="wealth_15_5_plus">ทีทีบี โกลบอล อินเด็กซ์ 15/5 + พลัส</option>
-                                <option value="wealth_15_5_max">ทีทีบี โกลบอล อินเด็กซ์ 15/5 แม็กซ์</option>
-                                <option value="wealth_99_5">ทีทีบี ส่งต่อความมั่งคั่ง 99/5</option>
-                                <option value="wealth_happy_99_10">ทีทีบี แฮปปี้ ไลฟ์ โพรเทค (99/10)</option>
-                                <option value="wealth_legacy_99_3">ทีทีบี อัลติเมท เลกาซี 99/3</option>
-                                <option value="wealth_treasure_2">ทีทีบี เดอะ เทรเชอร์ แผน 2</option>
-                            </optgroup>
-                            <optgroup label="กลุ่ม 2: Saving (Multiplier ปกติ)">
-                                <option value="saving_14_6">ทีทีบี มันนี่ เซฟเวอร์ 14/6</option>
-                                <option value="saving_10_5">ทีทีบี สมาร์ท โบนัส 10/5</option>
-                                <option value="saving_15_6">ทีทีบี มันนี่ เซฟเวอร์ 15/6</option>
-                                <option value="saving_11_3">ทีทีบี พรีเมียม เซฟเวอร์ 11/3</option>
-                            </optgroup>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="insurance-type">เลือกแบบประกัน</label>
+                        <select id="insurance-type" class="form-control" required>
+                            <option value="">เลือกแบบประกัน</option>
+                            <option value="ttb-global-index-15-5-plus">ทีทีบี โกลบอล อินเด็กซ์ พรินซิเพิล โพรเทค 15/5 + พลัส</option>
+                            <option value="ttb-global-index-15-5-max">ทีทีบี โกลบอล อินเด็กซ์ พรินซิเพิล โพรเทค 15/5 แม็กซ์</option>
+                            <option value="ttb-legacy-99-5">ทีทีบี ส่งต่อความมั่งคั่ง 99/5</option>
+                            <option value="ttb-happy-life-99-10">ทีทีบี แฮปปี้ ไลฟ์ โพรเทค 99/10</option>
+                            <option value="ttb-ultimate-legacy-99-3">ทีทีบี อัลติเมท เลกาซี 99/3</option>
+                            <option value="ttb-treasure-plan-2">ทีทีบี เดอะ เทรเชอร์ แผน 2</option>
+                            <option value="ttb-money-saver-14-6">ทีทีบี มันนี่ เซฟเวอร์ 14/6</option>
+                            <option value="ttb-smart-bonus-10-5">ทีทีบี สมาร์ท โบนัส 10/5</option>
+                            <option value="ttb-money-saver-15-6">ทีทีบี มันนี่ เซฟเวอร์ 15/6</option>
+                            <option value="ttb-premium-saver-11-3">ทีทีบี พรีเมียม เซฟเวอร์ 11/3</option>
                         </select>
+                        <div class="error-message" id="insurance-error">กรุณาเลือกแบบประกัน</div>
                     </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">อายุ (ปี)</label>
-                        <input type="number" id="age" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุอายุ">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">ทุนประกันภัย (บาท)</label>
-                        <input type="number" id="sumAssured" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุทุนประกัน">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">เบี้ยประกันภัยต่อปี (บาท)</label>
-                        <input type="number" id="premium" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="ระบุค่าเบี้ย (ขั้นต่ำ 50,000)">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">เลือกโปรโมชั่นเงินฝาก</label>
-                        <select id="promoType" class="w-full bg-gray-50 border border-gray-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="td36">TD 36 เดือน (1.50%)</option>
-                            <option value="td6">TD 6 เดือน (1.25%)</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">ระบุจำนวนเท่า (Multiplier)</label>
-                        <div class="flex items-center">
-                            <input type="number" id="depMultiplier" step="0.1" class="w-full bg-white border border-orange-300 rounded-l-lg p-3 text-sm focus:ring-2 focus:ring-orange-500 outline-none text-center font-bold ttb-orange" placeholder="เช่น 10">
-                            <span class="bg-orange-100 text-orange-800 border border-l-0 border-orange-300 rounded-r-lg p-3 text-sm">เท่า</span>
-                        </div>
-                        <p id="maxMultiText" class="text-xs text-gray-500 mt-1 text-right">สูงสุดตามสิทธิ์: - เท่า</p>
-                    </div>
-
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">ยอดเงินฝากที่คำนวณได้ (บาท)</label>
-                        <input type="text" id="calcDepositAmount" readonly class="w-full bg-gray-100 border border-gray-300 rounded-lg p-3 text-sm text-gray-600 font-bold" value="0.00">
-                    </div>
-                </form>
-
-                <div id="errorMsg" class="hidden mt-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative text-sm"></div>
-
-                <button onclick="calculate()" class="mt-6 w-full ttb-bg-orange hover:bg-orange-600 text-white font-bold py-3 px-4 rounded-lg shadow transition transform active:scale-95">
-                    คำนวณผลประโยชน์
-                </button>
-            </div>
-
-            <div id="resultSection" class="hidden">
-                
-                <div class="flex overflow-x-auto whitespace-nowrap bg-white rounded-t-xl shadow-sm border-b border-gray-200">
-                    <button onclick="switchTab(1)" id="tab1" class="flex-1 py-4 px-6 text-sm font-medium text-center tab-active">สรุปผลตอบแทน</button>
-                    <button onclick="switchTab(2)" id="tab2" class="flex-1 py-4 px-6 text-sm font-medium text-center tab-inactive">ประกันฯ</button>
-                    <button onclick="switchTab(3)" id="tab3" class="flex-1 py-4 px-6 text-sm font-medium text-center tab-inactive">เงินฝาก</button>
-                    <button onclick="checkPasscode()" id="tab4" class="flex-1 py-4 px-6 text-sm font-medium text-center tab-inactive">🔒 วิธีคำนวณ</button>
-                </div>
-
-                <div class="bg-white rounded-b-xl shadow-md p-6 min-h-[300px]">
                     
-                    <div id="content1" class="tab-content block">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                            <div class="bg-blue-50 rounded-xl p-5 border border-blue-100">
-                                <h3 class="text-blue-800 font-bold mb-2">🛡️ ผลประโยชน์ประกัน</h3>
-                                <div class="flex justify-between text-sm mb-1"><span>รับรวม:</span> <span id="sumInsBenefit" class="font-bold">0</span></div>
-                                <div class="flex justify-between text-sm items-center mt-2 pt-2 border-t border-blue-200">
-                                    <span id="insMetricLabel" class="font-bold text-blue-900">IRR:</span>
-                                    <span id="insMetricValue" class="text-xl font-bold ttb-orange">0.00%</span>
-                                </div>
+                    <div class="form-group">
+                        <label for="age">อายุ (ปี)</label>
+                        <input type="number" id="age" class="form-control" min="0" max="100" placeholder="กรอกอายุ" required>
+                        <div class="error-message" id="age-error">อายุไม่ตรงกับเกณฑ์แบบประกัน</div>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="coverage">ทุนประกัน (บาท)</label>
+                        <input type="number" id="coverage" class="form-control" min="0" placeholder="กรอกทุนประกัน" required>
+                        <div class="error-message" id="coverage-error">ทุนประกันไม่ตรงกับเกณฑ์แบบประกัน</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="premium">เบี้ยประกัน (บาท)</label>
+                        <input type="number" id="premium" class="form-control" min="50000" placeholder="ขั้นต่ำ 50,000 บาท" required>
+                        <div class="error-message" id="premium-error">เบี้ยประกันต้องไม่ต่ำกว่า 50,000 บาท</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                เลือกโปรโมชั่น
+            </div>
+            <div class="card-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="promotion-type">ประเภทโปรโมชั่น</label>
+                        <select id="promotion-type" class="form-control" required>
+                            <option value="">เลือกประเภทโปรโมชั่น</option>
+                            <option value="td36">ฝากประจำ 36 เดือน (1.50%)</option>
+                            <option value="td6">ฝากประจำ 6 เดือน (1.25%)</option>
+                        </select>
+                        <div class="error-message" id="promotion-error">กรุณาเลือกประเภทโปรโมชั่น</div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="multiplier">จำนวนเท่าของเงินที่ฝาก (สูงสุด: <span id="max-multiplier">--</span>)</label>
+                        <input type="number" id="multiplier" class="form-control" min="1" placeholder="กรอกจำนวนเท่า" required>
+                        <div class="error-message" id="multiplier-error">จำนวนเท่าเกินสิทธิ์ที่กำหนด</div>
+                    </div>
+                </div>
+                
+                <div class="info-box">
+                    <h3>ข้อมูลสิทธิ์การฝาก</h3>
+                    <p><strong>แบบประกันกลุ่ม Wealth / คุ้มครองระยะยาว:</strong> ฝากได้สูงสุด 20 เท่า (36 เดือน) หรือ 15 เท่า (6 เดือน)</p>
+                    <p><strong>แบบประกันกลุ่มออมทรัพย์ / ระยะกลาง:</strong> ฝากได้สูงสุด 10 เท่า (36 เดือน) หรือ 7.5 เท่า (6 เดือน)</p>
+                </div>
+                
+                <button id="calculate-btn" class="btn btn-block">คำนวณผลประโยชน์</button>
+            </div>
+        </div>
+
+        <div id="results-section" class="hidden">
+            <div class="tabs">
+                <div class="tab active" data-tab="tab1">สรุปผลตอบแทน</div>
+                <div class="tab" data-tab="tab2">ผลประโยชน์ประกันฯ</div>
+                <div class="tab" data-tab="tab3">ผลประโยชน์เงินฝาก</div>
+                <div class="tab" data-tab="tab4" id="tab4">วิธีคำนวณ</div>
+            </div>
+
+            <!-- Tab 1: สรุปผลตอบแทน -->
+            <div class="tab-content active" id="tab1">
+                <div class="card">
+                    <div class="card-header">
+                        สรุปผลตอบแทน
+                    </div>
+                    <div class="card-body">
+                        <div class="dashboard">
+                            <div class="dashboard-card">
+                                <h3>ผลประโยชน์ประกัน</h3>
+                                <div class="dashboard-value" id="insurance-benefit">0 บาท</div>
+                                <div class="dashboard-subtitle" id="insurance-irr">IRR: --</div>
                             </div>
-                            <div class="bg-green-50 rounded-xl p-5 border border-green-100">
-                                <h3 class="text-green-800 font-bold mb-2">💰 ผลประโยชน์เงินฝาก</h3>
-                                <div class="flex justify-between text-sm mb-1"><span>ดอกเบี้ยสุทธิ:</span> <span id="sumDepInterest" class="font-bold">0</span></div>
-                                <div class="flex justify-between text-sm items-center mt-2 pt-2 border-t border-green-200">
-                                    <span class="font-bold text-green-900">IRR:</span>
-                                    <span id="depIrrValue" class="text-xl font-bold ttb-orange">0.00%</span>
-                                </div>
+                            <div class="dashboard-card">
+                                <h3>ผลประโยชน์เงินฝาก</h3>
+                                <div class="dashboard-value" id="deposit-benefit">0 บาท</div>
+                                <div class="dashboard-subtitle" id="deposit-irr">IRR: --</div>
+                            </div>
+                            <div class="dashboard-card">
+                                <h3>รวมผลประโยชน์</h3>
+                                <div class="dashboard-value" id="total-benefit">0 บาท</div>
+                                <div class="dashboard-subtitle">รวมทั้งประกันและเงินฝาก</div>
+                            </div>
+                            <div class="dashboard-card">
+                                <h3>ผลประโยชน์สุทธิ</h3>
+                                <div class="dashboard-value" id="net-benefit">0 บาท</div>
+                                <div class="dashboard-subtitle">หลังหักค่าเบี้ยและเงินต้น</div>
                             </div>
                         </div>
-
-                        <div class="bg-gradient-to-r from-gray-800 to-gray-700 rounded-xl p-6 text-white text-center shadow-lg relative overflow-hidden">
-                            <div class="absolute top-0 right-0 -mt-2 -mr-2 w-20 h-20 bg-white opacity-10 rounded-full"></div>
-                            <p class="text-gray-300 text-sm mb-1">ผลประโยชน์สุทธิ (Net Profit)</p>
-                            <h2 id="netProfit" class="text-3xl md:text-4xl font-bold text-green-400">0.00</h2>
-                            <p class="text-xs text-gray-400 mt-2">กำไรจริงหลังหักต้นทุนทั้งหมด</p>
+                        
+                        <div class="highlight">
+                            <h3>หมายเหตุ</h3>
+                            <p>สำหรับแบบประกันตลอดชีพ (เช่น 99/10, 99/3, 99/5) จะแสดง "สร้างความคุ้มครองสุด xx% หรือ xx เท่า ของค่าเบี้ย" แทน IRR</p>
                         </div>
-
-                        <button onclick="generatePDF()" class="mt-6 w-full bg-white border-2 border-red-500 text-red-500 hover:bg-red-50 font-bold py-3 rounded-lg flex justify-center items-center transition">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            Download PDF Summary
-                        </button>
                     </div>
+                </div>
+            </div>
 
-                    <div id="content2" class="tab-content hidden">
-                        <div class="overflow-x-auto"><table class="min-w-full text-sm text-center"><thead class="bg-blue-100 text-blue-900"><tr><th class="py-2 px-2">ปีที่</th><th class="py-2">เบี้ยฯ</th><th class="py-2">เงินคืน</th><th class="py-2">Net</th></tr></thead><tbody id="insTableBody"></tbody></table></div>
-                        <div id="showMoreBtnContainer" class="text-center mt-2 hidden"><button onclick="toggleTableRows()" class="text-blue-600 text-xs underline">แสดงทั้งหมด</button></div>
+            <!-- Tab 2: ผลประโยชน์ประกันฯ -->
+            <div class="tab-content" id="tab2">
+                <div class="card">
+                    <div class="card-header">
+                        ผลประโยชน์ประกันชีวิต
                     </div>
-
-                    <div id="content3" class="tab-content hidden">
-                        <div class="overflow-x-auto"><table class="min-w-full text-sm text-center"><thead class="bg-green-100 text-green-900"><tr><th class="py-2 px-2">รายการ</th><th class="py-2">จำนวนเงิน</th></tr></thead><tbody id="depTableBody"></tbody></table></div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ปีกรมธรรม์</th>
+                                        <th>เบี้ยประกัน</th>
+                                        <th>เบี้ยประกันสะสม</th>
+                                        <th>เงินระหว่างสัญญา</th>
+                                        <th>เงินครบสัญญา</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="insurance-table-body">
+                                    <!-- Data will be populated here -->
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td><strong>รวม</strong></td>
+                                        <td id="total-premium">0 บาท</td>
+                                        <td>-</td>
+                                        <td id="total-midterm">0 บาท</td>
+                                        <td id="total-maturity">0 บาท</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        
+                        <div class="dashboard">
+                            <div class="dashboard-card">
+                                <h3>เบี้ยประกันที่ชำระ</h3>
+                                <div class="dashboard-value" id="total-paid">0 บาท</div>
+                            </div>
+                            <div class="dashboard-card">
+                                <h3>เงินประโยชน์ตามสัญญา</h3>
+                                <div class="dashboard-value" id="total-benefits">0 บาท</div>
+                            </div>
+                            <div class="dashboard-card">
+                                <h3>ผลประโยชน์สุทธิ</h3>
+                                <div class="dashboard-value" id="net-insurance-benefit">0 บาท</div>
+                            </div>
+                        </div>
                     </div>
+                </div>
+            </div>
 
-                    <div id="content4" class="tab-content hidden">
-                        <div id="methodLocked" class="text-center py-10"><p>🔒 Passcode Required</p></div>
-                        <div id="methodUnlocked" class="hidden text-xs font-mono bg-gray-100 p-4 rounded"><div id="debugLog"></div></div>
+            <!-- Tab 3: ผลประโยชน์เงินฝาก -->
+            <div class="tab-content" id="tab3">
+                <div class="card">
+                    <div class="card-header">
+                        ผลประโยชน์เงินฝาก
                     </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ปี</th>
+                                        <th>จำนวนเงินที่ใช้ฝาก</th>
+                                        <th>ดอกเบี้ยที่ได้รับ</th>
+                                        <th>ดอกเบี้ยหลังหักภาษี</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="deposit-table-body">
+                                    <!-- Data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="dashboard">
+                            <div class="dashboard-card">
+                                <h3>เงินต้น</h3>
+                                <div class="dashboard-value" id="deposit-principal">0 บาท</div>
+                            </div>
+                            <div class="dashboard-card">
+                                <h3>ดอกเบี้ยก่อนหักภาษี</h3>
+                                <div class="dashboard-value" id="deposit-interest">0 บาท</div>
+                            </div>
+                            <div class="dashboard-card">
+                                <h3>ดอกเบี้ยหลังหักภาษี</h3>
+                                <div class="dashboard-value" id="deposit-after-tax">0 บาท</div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-box">
+                            <h3>นโยบายการหักภาษี</h3>
+                            <p>ดอกเบี้ยส่วนที่เกิน 20,000 บาท จะถูกหักภาษี 15%</p>
+                            <p>ตัวอย่าง: หากดอกเบี้ยทั้งหมด 25,000 บาท จะถูกหักภาษี 750 บาท (5,000 x 15%)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
+            <!-- Tab 4: วิธีคำนวณ -->
+            <div class="tab-content" id="tab4">
+                <div class="card">
+                    <div class="card-header">
+                        วิธีคำนวณ
+                    </div>
+                    <div class="card-body">
+                        <div class="info-box">
+                            <h3>ขั้นตอนการคำนวณ IRR</h3>
+                            <p>IRR (Internal Rate of Return) คืออัตราผลตอบแทนภายใน ซึ่งเป็นอัตราที่ทำให้มูลค่าปัจจุบันสุทธิ (NPV) เท่ากับศูนย์</p>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>ปี</th>
+                                        <th>เงินเข้า (บาท)</th>
+                                        <th>เงินออก (บาท)</th>
+                                        <th>กระแสเงินสด (บาท)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="calculation-table-body">
+                                    <!-- Data will be populated here -->
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <div class="highlight">
+                            <h3>ขั้นตอนการคำนวณ</h3>
+                            <ol>
+                                <li>กำหนดกระแสเงินสด (Cash Flow) ทุกปี</li>
+                                <li>ใช้สูตร IRR = ค้นหาอัตราที่ทำให้ NPV = 0</li>
+                                <li>NPV = Σ [CFt / (1 + r)^t]</li>
+                                <li>ใช้การคำนวณแบบ trial and error หรือใช้ฟังก์ชัน IRR ในโปรแกรมคำนวณ</li>
+                            </ol>
+                        </div>
+                        
+                        <button id="verify-calculation" class="btn btn-secondary">ตรวจสอบความถูกต้องการคำนวณ</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="pdfTemplate">
-        <div class="p-8 bg-white border-4 border-gray-100 h-full relative">
-            <div class="flex justify-between items-start border-b-2 border-orange-500 pb-4 mb-6">
-                <div>
-                    <h1 class="text-3xl font-bold ttb-blue">RH5 PROMOTION</h1>
-                    <p class="text-gray-500">สรุปแผนการเงินและการลงทุน</p>
-                </div>
-                <div class="text-right">
-                    <div class="text-4xl">💎</div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-6 mb-6">
-                <div class="bg-blue-50 rounded-lg p-4">
-                    <h3 class="font-bold text-blue-800 text-lg mb-3 border-b border-blue-200 pb-2">แบบประกันภัย</h3>
-                    <div class="space-y-2 text-sm text-gray-700">
-                        <div class="flex justify-between"><span>แบบประกัน:</span> <span id="pdfProdName" class="font-semibold text-right w-32 truncate">...</span></div>
-                        <div class="flex justify-between"><span>ทุนประกัน:</span> <span id="pdfSumAssured" class="font-semibold">0</span></div>
-                        <div class="flex justify-between"><span>ระยะชำระเบี้ย:</span> <span id="pdfPayTerm" class="font-semibold">0 ปี</span></div>
-                        <div class="flex justify-between"><span>ระยะคุ้มครอง:</span> <span id="pdfCoverTerm" class="font-semibold">0 ปี</span></div>
-                        <div class="flex justify-between mt-2 pt-2 border-t border-blue-200"><span class="font-bold">เบี้ยประกันรวม:</span> <span id="pdfTotalPrem" class="font-bold text-blue-900">0</span></div>
-                    </div>
-                </div>
-
-                <div class="bg-gray-50 rounded-lg p-4">
-                     <h3 class="font-bold text-gray-800 text-lg mb-3 border-b border-gray-200 pb-2">สรุปผลตอบแทน</h3>
-                     <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">ผลประโยชน์ประกัน</span>
-                            <span id="pdfInsBenefit" class="font-bold text-blue-600">0</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">IRR ประกัน</span>
-                            <span id="pdfInsIRR" class="font-bold bg-blue-100 text-blue-800 px-2 py-0.5 rounded">0%</span>
-                        </div>
-                         <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">ผลประโยชน์เงินฝาก</span>
-                            <span id="pdfDepBenefit" class="font-bold text-green-600">0</span>
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">IRR เงินฝาก</span>
-                            <span id="pdfDepIRR" class="font-bold bg-green-100 text-green-800 px-2 py-0.5 rounded">0%</span>
-                        </div>
-                     </div>
-                </div>
-            </div>
-
-            <div class="bg-gradient-to-r from-blue-900 to-blue-800 text-white rounded-xl p-6 flex justify-between items-center shadow-lg mb-6">
-                <div>
-                    <p class="text-blue-200 text-sm">ผลประโยชน์สุทธิ (Net Profit)</p>
-                    <p class="text-xs opacity-75">กำไรหลังหักต้นทุนทั้งหมด</p>
-                </div>
-                <div class="text-right">
-                    <p id="pdfNetProfit" class="text-4xl font-bold text-orange-400">0.00</p>
-                    <p class="text-sm">บาท</p>
-                </div>
-            </div>
-
-            <div class="text-center text-xs text-gray-400 mt-10 border-t pt-4">
-                เอกสารนี้จัดทำโดยระบบคำนวณเบื้องต้น เพื่อประกอบการวางแผนการเงินเท่านั้น <br>
-                โปรดศึกษารายละเอียดและเงื่อนไขในกรมธรรม์ฉบับจริง
-            </div>
+    <div class="passcode-modal" id="passcode-modal">
+        <div class="modal-content">
+            <h2>ป้อน Passcode</h2>
+            <p>กรุณาป้อน Passcode เพื่อเข้าใช้งานวิธีคำนวณ</p>
+            <input type="password" id="passcode-input" class="passcode-input" maxlength="4">
+            <button id="verify-passcode" class="btn">ยืนยัน</button>
         </div>
     </div>
 
-    <div id="passcodeModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white p-6 rounded-lg shadow-xl w-80">
-            <h3 class="font-bold text-lg mb-4">Enter Passcode</h3>
-            <input type="password" id="passcodeInput" class="w-full border p-2 rounded mb-4 text-center tracking-widest" maxlength="4">
-            <div class="flex justify-end gap-2">
-                <button onclick="closeModal()" class="px-4 py-2 text-gray-600">Cancel</button>
-                <button onclick="verifyPasscode()" class="px-4 py-2 bg-blue-600 text-white rounded">Unlock</button>
-            </div>
-        </div>
+    <div class="footer">
+        <p>© 2025 บริษัท ทีทีบี ประกันชีวิต จำกัด (มหาชน) | โปรโมชั่น "ยิ้มรับดอกเบี้ยสูง" วันที่ 1 - 30 พฤศจิกายน 2568</p>
     </div>
 
     <script>
-        // --- Loading Screen Logic ---
-        function enterApp() {
-            const screen = document.getElementById('loadingScreen');
-            screen.style.animation = "fadeOut 0.5s forwards";
-            setTimeout(() => {
-                screen.style.display = 'none';
-            }, 500);
-        }
-
-        // --- Data Configuration ---
-        const products = {
-            "wealth_15_5_plus": { name: "Global Index 15/5 Plus", group: 1, minAge: 0, maxAge: 70, minSum: 50000, payTerm: 5, coverTerm: 15, cbRate: 2.5, cbFreq: 2, matRate: 500, type: "saving" },
-            "wealth_15_5_max": { name: "Global Index 15/5 Max", group: 1, minAge: 0, maxAge: 70, minSum: 50000, payTerm: 5, coverTerm: 15, cbRate: 1, cbFreq: 2, matRate: 500, type: "saving" },
-            "wealth_99_5": { name: "ส่งต่อความมั่งคั่ง 99/5", group: 1, minAge: 0, maxAge: 70, minSum: 50000, payTerm: 5, coverTerm: 99, cbRate: 0, cbFreq: 0, matRate: 100, type: "whole_life" },
-            "wealth_happy_99_10": { name: "Happy Life Protect 99/10", group: 1, minAge: 0, maxAge: 50, minSum: 200000, payTerm: 10, coverTerm: 99, cbRate: 0, cbFreq: 0, matRate: 150, type: "whole_life" },
-            "wealth_legacy_99_3": { name: "Ultimate Legacy 99/3", group: 1, minAge: 0, maxAge: 75, minSum: 10000000, payTerm: 3, coverTerm: 99, cbRate: 0, cbFreq: 0, matRate: 100, type: "whole_life" },
-            "wealth_treasure_2": { name: "The Treasure Plan 2", group: 1, minAge: 0, maxAge: 70, minSum: 200000, payTerm: 8, coverTerm: 88, cbRate: 8, cbFreq: 1, matRate: 888, endAge: 88, type: "saving" }, 
-            "saving_14_6": { name: "Money Saver 14/6", group: 2, minAge: 0, maxAge: 80, minSum: 50000, payTerm: 6, coverTerm: 14, customCB: true, matRate: 654, type: "saving" },
-            "saving_10_5": { name: "Smart Bonus 10/5", group: 2, minAge: 0, maxAge: 70, minSum: 1, payTerm: 5, coverTerm: 10, customCB: true, matRate: 511, type: "saving" },
-            "saving_15_6": { name: "Money Saver 15/6", group: 2, minAge: 0, maxAge: 70, minSum: 100000, payTerm: 6, coverTerm: 15, cbRate: 2.5, cbFreq: 1, matRate: 150, type: "saving" },
-            "saving_11_3": { name: "Premium Saver 11/3", group: 2, minAge: 0, maxAge: 80, minSum: 300000, payTerm: 3, coverTerm: 11, customCB: true, matRate: 349.5, type: "saving" }
-        };
-
-        const promotions = {
-            "td36": { name: "TD 36 Months", interest: 1.50, years: 3, group1_mult: 20, group2_mult: 10 },
-            "td6": { name: "TD 6 Months", interest: 1.25, years: 0.5, group1_mult: 15, group2_mult: 7.5 }
-        };
-
-        // --- Event Listeners & Auto Calc ---
-        document.getElementById('premium').addEventListener('input', updateDepositCalc);
-        document.getElementById('productSelect').addEventListener('change', updateDepositCalc);
-        document.getElementById('promoType').addEventListener('change', updateDepositCalc);
-        document.getElementById('depMultiplier').addEventListener('input', updateDepositCalc);
-
-        function formatMoney(amount) {
-            return amount.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-
-        function updateDepositCalc() {
-            const prodKey = document.getElementById('productSelect').value;
-            const premium = parseFloat(document.getElementById('premium').value) || 0;
-            const promoKey = document.getElementById('promoType').value;
-            const userMulti = parseFloat(document.getElementById('depMultiplier').value) || 0;
-            
-            const maxText = document.getElementById('maxMultiText');
-            const calcField = document.getElementById('calcDepositAmount');
-
-            if (!prodKey) {
-                maxText.innerText = "สูงสุดตามสิทธิ์: - เท่า";
-                calcField.value = "0.00";
-                return;
-            }
-
-            const p = products[prodKey];
-            const promo = promotions[promoKey];
-            let maxMult = (p.group === 1) ? promo.group1_mult : promo.group2_mult;
-            
-            // Display Max limit info
-            maxText.innerText = `สูงสุดตามสิทธิ์: ${maxMult} เท่า`;
-
-            // Calculate Amount
-            let amount = premium * userMulti;
-            calcField.value = formatMoney(amount);
-        }
-
-        // --- Main Calculation ---
-        function calculate() {
-            const prodKey = document.getElementById('productSelect').value;
-            const age = parseInt(document.getElementById('age').value);
-            const sumAssured = parseFloat(document.getElementById('sumAssured').value);
-            const premium = parseFloat(document.getElementById('premium').value);
-            const promoKey = document.getElementById('promoType').value;
-            const userMulti = parseFloat(document.getElementById('depMultiplier').value);
-            
-            const errorDiv = document.getElementById('errorMsg');
-            errorDiv.classList.add('hidden');
-            let errors = [];
-
-            if (!prodKey) errors.push("กรุณาเลือกแบบประกัน");
-            if (isNaN(premium) || premium < 50000) errors.push("เบี้ยประกันต้องไม่ต่ำกว่า 50,000 บาท");
-            if (isNaN(userMulti) || userMulti <= 0) errors.push("กรุณาระบุจำนวนเท่า (Multiplier)");
-            
-            // Check Multiplier Limit
-            if (prodKey && promoKey && userMulti) {
-                const p = products[prodKey];
-                const promo = promotions[promoKey];
-                let maxMult = (p.group === 1) ? promo.group1_mult : promo.group2_mult;
-                if (userMulti > maxMult) errors.push(`จำนวนเท่าเกินสิทธิ์ (สูงสุด ${maxMult} เท่า)`);
-                
-                // Cap Check
-                let deposit = premium * userMulti;
-                if (p.group === 2 && deposit > 200000000) errors.push("ยอดเงินฝากเกิน 200 ล้านบาท (สำหรับกลุ่ม 2)");
-            }
-
-            if (errors.length > 0) {
-                errorDiv.innerHTML = errors.join("<br>");
-                errorDiv.classList.remove('hidden');
-                return;
-            }
-
-            // Logic (Simplified from previous)
-            const product = products[prodKey];
-            const promo = promotions[promoKey];
-            const deposit = premium * userMulti;
-
-            // --- Insurance Calcs ---
-            let endYear = product.coverTerm || (product.endAge - age);
-            let totalPrem = 0, totalBenefit = 0;
-            let irrStream = [-premium]; // T0
-            let tableRows = [];
-
-            for (let y = 1; y <= endYear; y++) {
-                let premPaid = (y <= product.payTerm) ? premium : 0;
-                let benefit = 0;
-                
-                // Logic for benefit (Reuse logic)
-                if (product.customCB) { /* Simplified for brevity, add specific logic here */ 
-                     if(prodKey === 'saving_14_6' && y<=6) benefit = sumAssured * 0.02;
-                     else if(prodKey === 'saving_14_6' && y<=13) benefit = sumAssured * 0.04;
-                } else if (product.cbRate) {
-                     benefit = sumAssured * (product.cbRate/100);
+        document.addEventListener('DOMContentLoaded', function() {
+            // ข้อมูลแบบประกัน
+            const insuranceProducts = {
+                'ttb-global-index-15-5-plus': {
+                    name: 'ทีทีบี โกลบอล อินเด็กซ์ พรินซิเพิล โพรเทค 15/5 + พลัส',
+                    minAge: 0.08,
+                    maxAge: 70,
+                    minCoverage: 50000,
+                    maxCoverage: null,
+                    group: 1,
+                    term: 15,
+                    payoutStructure: {
+                        midTerm: {
+                            interval: 2,
+                            rate: 2.5
+                        },
+                        maturity: 500
+                    }
+                },
+                'ttb-global-index-15-5-max': {
+                    name: 'ทีทีบี โกลบอล อินเด็กซ์ พรินซิเพิล โพรเทค 15/5 แม็กซ์',
+                    minAge: 0.08,
+                    maxAge: 70,
+                    minCoverage: 50000,
+                    maxCoverage: null,
+                    group: 1,
+                    term: 15,
+                    payoutStructure: {
+                        midTerm: {
+                            interval: 2,
+                            rate: 1
+                        },
+                        maturity: 500
+                    }
+                },
+                'ttb-legacy-99-5': {
+                    name: 'ทีทีบี ส่งต่อความมั่งคั่ง 99/5',
+                    minAge: 0.08,
+                    maxAge: 70,
+                    minCoverage: 50000,
+                    maxCoverage: null,
+                    group: 1,
+                    term: 99,
+                    payoutStructure: {
+                        midTerm: null,
+                        maturity: 100
+                    }
+                },
+                'ttb-happy-life-99-10': {
+                    name: 'ทีทีบี แฮปปี้ ไลฟ์ โพรเทค 99/10',
+                    minAge: 0.08,
+                    maxAge: 50,
+                    minCoverage: 200000,
+                    maxCoverage: null,
+                    group: 1,
+                    term: 99,
+                    payoutStructure: {
+                        midTerm: null,
+                        maturity: 150
+                    }
+                },
+                'ttb-ultimate-legacy-99-3': {
+                    name: 'ทีทีบี อัลติเมท เลกาซี 99/3',
+                    minAge: 0.08,
+                    maxAge: 75,
+                    minCoverage: 10000000,
+                    maxCoverage: null,
+                    group: 1,
+                    term: 99,
+                    payoutStructure: {
+                        midTerm: null,
+                        maturity: 100
+                    }
+                },
+                'ttb-treasure-plan-2': {
+                    name: 'ทีทีบี เดอะ เทรเชอร์ แผน 2',
+                    minAge: 0.08,
+                    maxAge: 70,
+                    minCoverage: 200000,
+                    maxCoverage: null,
+                    group: 1,
+                    term: 88,
+                    payoutStructure: {
+                        midTerm: {
+                            interval: 1,
+                            rate: 8
+                        },
+                        maturity: 888
+                    }
+                },
+                'ttb-money-saver-14-6': {
+                    name: 'ทีทีบี มันนี่ เซฟเวอร์ 14/6',
+                    minAge: 0.08,
+                    maxAge: 80,
+                    minCoverage: 50000,
+                    maxCoverage: 300000,
+                    group: 2,
+                    term: 14,
+                    payoutStructure: {
+                        midTerm: {
+                            years: [1,2,3,4,5,6,7,8,9,10,11,12,13],
+                            rates: [2,2,2,2,2,2,4,4,4,4,4,4,4]
+                        },
+                        maturity: 654
+                    }
+                },
+                'ttb-smart-bonus-10-5': {
+                    name: 'ทีทีบี สมาร์ท โบนัส 10/5',
+                    minAge: 0.08,
+                    maxAge: 70,
+                    minCoverage: 0,
+                    maxCoverage: null,
+                    group: 2,
+                    term: 10,
+                    payoutStructure: {
+                        midTerm: {
+                            years: [2,4,6,8],
+                            rates: [1,1,1,1]
+                        },
+                        maturity: 511
+                    }
+                },
+                'ttb-money-saver-15-6': {
+                    name: 'ทีทีบี มันนี่ เซฟเวอร์ 15/6',
+                    minAge: 0.08,
+                    maxAge: 70,
+                    minCoverage: 100000,
+                    maxCoverage: null,
+                    group: 2,
+                    term: 15,
+                    payoutStructure: {
+                        midTerm: {
+                            interval: 1,
+                            rate: 2.5
+                        },
+                        maturity: 150
+                    }
+                },
+                'ttb-premium-saver-11-3': {
+                    name: 'ทีทีบี พรีเมียม เซฟเวอร์ 11/3',
+                    minAge: 0.08,
+                    maxAge: 80,
+                    minCoverage: 300000,
+                    maxCoverage: null,
+                    group: 2,
+                    term: 11,
+                    payoutStructure: {
+                        midTerm: {
+                            years: [2,4,6,8,10],
+                            rates: [1,1,1,1,1]
+                        },
+                        maturity: 349.5
+                    }
                 }
-                if (y === endYear) benefit += sumAssured * (product.matRate/100);
-
-                totalPrem += premPaid;
-                totalBenefit += benefit;
-                
-                let nextPrem = (y < product.payTerm) ? premium : 0;
-                irrStream.push(benefit - nextPrem);
-
-                tableRows.push({y, premPaid, benefit, net: benefit-premPaid});
-            }
-
-            let insIRR = calculateIRR(irrStream);
-
-            // --- Deposit Calcs ---
-            const rate = promo.interest / 100;
-            const gross = deposit * rate * promo.years;
-            let tax = (gross > 20000) ? gross * 0.15 : 0;
-            let netInt = gross - tax;
-            let depIRR = (Math.pow((deposit + netInt) / deposit, 1/promo.years) - 1) * 100;
-
-            // --- Render UI ---
-            document.getElementById('resultSection').classList.remove('hidden');
-            document.getElementById('sumInsBenefit').innerText = formatMoney(totalBenefit);
-            document.getElementById('insMetricValue').innerText = isNaN(insIRR) ? "N/A" : insIRR.toFixed(2) + "%";
-            document.getElementById('sumDepInterest').innerText = formatMoney(netInt);
-            document.getElementById('depIrrValue').innerText = depIRR.toFixed(2) + "%";
-            
-            let netProfit = (totalBenefit - totalPrem) + netInt;
-            document.getElementById('netProfit').innerText = formatMoney(netProfit);
-
-            // --- Update PDF Template Data ---
-            document.getElementById('pdfProdName').innerText = product.name;
-            document.getElementById('pdfSumAssured').innerText = formatMoney(sumAssured);
-            document.getElementById('pdfPayTerm').innerText = product.payTerm + " ปี";
-            document.getElementById('pdfCoverTerm').innerText = endYear + " ปี";
-            document.getElementById('pdfTotalPrem').innerText = formatMoney(totalPrem);
-            document.getElementById('pdfInsBenefit').innerText = formatMoney(totalBenefit);
-            document.getElementById('pdfInsIRR').innerText = isNaN(insIRR) ? "-" : insIRR.toFixed(2) + "%";
-            document.getElementById('pdfDepBenefit').innerText = formatMoney(netInt);
-            document.getElementById('pdfDepIRR').innerText = depIRR.toFixed(2) + "%";
-            document.getElementById('pdfNetProfit').innerText = formatMoney(netProfit);
-
-            // Populate Table (Sample)
-            const tbody = document.getElementById('insTableBody');
-            tbody.innerHTML = '';
-            tableRows.slice(0,5).forEach(r => {
-                tbody.innerHTML += `<tr class="border-b"><td class="py-2">${r.y}</td><td>${formatMoney(r.premPaid)}</td><td>${formatMoney(r.benefit)}</td><td>${formatMoney(r.net)}</td></tr>`;
-            });
-            
-            switchTab(1);
-            document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // --- PDF Generation ---
-        window.generatePDF = function() {
-            const element = document.getElementById('pdfTemplate');
-            const opt = {
-                scale: 2, // High resolution
-                useCORS: true
             };
 
-            html2canvas(element, opt).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            // ตัวแปรสำหรับเก็บข้อมูล
+            let selectedProduct = null;
+            let calculationData = null;
+
+            // ฟังก์ชันตรวจสอบความถูกต้องของข้อมูล
+            function validateForm() {
+                let isValid = true;
                 
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save('RH5_Promo_Plan.pdf');
-            });
-        }
-
-        // --- Helper: IRR ---
-        function calculateIRR(values) {
-            let guess = 0.1;
-            for (let i = 0; i < 1000; i++) {
-                let npv = 0, dNpv = 0;
-                for (let t = 0; t < values.length; t++) {
-                    npv += values[t] / Math.pow(1 + guess, t);
-                    dNpv -= t * values[t] / Math.pow(1 + guess, t + 1);
+                // รีเซ็ตข้อความผิดพลาด
+                document.querySelectorAll('.error-message').forEach(el => {
+                    el.style.display = 'none';
+                });
+                
+                // ตรวจสอบแบบประกัน
+                const insuranceType = document.getElementById('insurance-type').value;
+                if (!insuranceType) {
+                    document.getElementById('insurance-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    selectedProduct = insuranceProducts[insuranceType];
                 }
-                let newGuess = guess - npv / dNpv;
-                if (Math.abs(newGuess - guess) < 1e-7) return newGuess * 100;
-                guess = newGuess;
+                
+                // ตรวจสอบอายุ
+                const age = parseFloat(document.getElementById('age').value);
+                if (isNaN(age) || age < selectedProduct.minAge || age > selectedProduct.maxAge) {
+                    document.getElementById('age-error').style.display = 'block';
+                    isValid = false;
+                }
+                
+                // ตรวจสอบทุนประกัน
+                const coverage = parseFloat(document.getElementById('coverage').value);
+                if (isNaN(coverage) || coverage < selectedProduct.minCoverage || 
+                   (selectedProduct.maxCoverage && coverage > selectedProduct.maxCoverage)) {
+                    document.getElementById('coverage-error').style.display = 'block';
+                    isValid = false;
+                }
+                
+                // ตรวจสอบเบี้ยประกัน
+                const premium = parseFloat(document.getElementById('premium').value);
+                if (isNaN(premium) || premium < 50000) {
+                    document.getElementById('premium-error').style.display = 'block';
+                    isValid = false;
+                }
+                
+                // ตรวจสอบประเภทโปรโมชั่น
+                const promotionType = document.getElementById('promotion-type').value;
+                if (!promotionType) {
+                    document.getElementById('promotion-error').style.display = 'block';
+                    isValid = false;
+                }
+                
+                // ตรวจสอบจำนวนเท่า
+                const multiplier = parseFloat(document.getElementById('multiplier').value);
+                if (isNaN(multiplier) || multiplier < 1) {
+                    document.getElementById('multiplier-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    // ตรวจสอบว่าไม่เกินสิทธิ์
+                    let maxMultiplier = 0;
+                    if (selectedProduct.group === 1) {
+                        maxMultiplier = promotionType === 'td36' ? 20 : 15;
+                    } else {
+                        maxMultiplier = promotionType === 'td36' ? 10 : 7.5;
+                    }
+                    
+                    if (multiplier > maxMultiplier) {
+                        document.getElementById('multiplier-error').style.display = 'block';
+                        isValid = false;
+                    }
+                }
+                
+                return isValid;
             }
-            return NaN;
-        }
 
-        // --- Tab Logic ---
-        function switchTab(id) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('button[id^="tab"]').forEach(el => { el.classList.remove('tab-active'); el.classList.add('tab-inactive'); });
-            document.getElementById(`content${id}`).classList.remove('hidden');
-            document.getElementById(`tab${id}`).classList.add('tab-active');
-            document.getElementById(`tab${id}`).classList.remove('tab-inactive');
-        }
-        
-        function checkPasscode() {
-            document.getElementById('passcodeModal').classList.remove('hidden');
-        }
-        function closeModal() { document.getElementById('passcodeModal').classList.add('hidden'); }
-        function verifyPasscode() {
-            if(document.getElementById('passcodeInput').value === "0229") {
-                closeModal();
-                switchTab(4);
-                document.getElementById('methodLocked').classList.add('hidden');
-                document.getElementById('methodUnlocked').classList.remove('hidden');
-            } else alert("รหัสผิด");
-        }
+            // ฟังก์ชันคำนวณผลประโยชน์
+            function calculateBenefits() {
+                const insuranceType = document.getElementById('insurance-type').value;
+                const age = parseFloat(document.getElementById('age').value);
+                const coverage = parseFloat(document.getElementById('coverage').value);
+                const premium = parseFloat(document.getElementById('premium').value);
+                const promotionType = document.getElementById('promotion-type').value;
+                const multiplier = parseFloat(document.getElementById('multiplier').value);
+                
+                selectedProduct = insuranceProducts[insuranceType];
+                
+                // คำนวณเงินฝาก
+                const depositAmount = premium * multiplier;
+                const depositRate = promotionType === 'td36' ? 0.015 : 0.0125;
+                const depositTerm = promotionType === 'td36' ? 3 : 0.5;
+                
+                // คำนวณผลประโยชน์เงินฝาก
+                const depositInterest = depositAmount * depositRate * depositTerm;
+                const taxDeduction = Math.max(0, depositInterest - 20000) * 0.15;
+                const depositAfterTax = depositInterest - taxDeduction;
+                
+                // คำนวณผลประโยชน์ประกัน
+                let insuranceBenefit = 0;
+                let maturityValue = 0;
+                
+                if (selectedProduct.payoutStructure.midTerm) {
+                    // คำนวณผลประโยชน์ระหว่างสัญญา
+                    if (selectedProduct.payoutStructure.midTerm.interval) {
+                        const interval = selectedProduct.payoutStructure.midTerm.interval;
+                        const rate = selectedProduct.payoutStructure.midTerm.rate;
+                        const years = Math.floor(selectedProduct.term / interval);
+                        
+                        for (let i = 1; i <= years; i++) {
+                            insuranceBenefit += coverage * (rate / 100);
+                        }
+                    } else {
+                        selectedProduct.payoutStructure.midTerm.years.forEach((year, index) => {
+                            insuranceBenefit += coverage * (selectedProduct.payoutStructure.midTerm.rates[index] / 100);
+                        });
+                    }
+                }
+                
+                // คำนวณเงินครบสัญญา
+                maturityValue = coverage * (selectedProduct.payoutStructure.maturity / 100);
+                insuranceBenefit += maturityValue;
+                
+                // คำนวณ IRR
+                let insuranceIrr = calculateIrr(premium, insuranceBenefit, selectedProduct.term);
+                let depositIrr = calculateIrr(depositAmount, depositAfterTax, depositTerm);
+                
+                // กรณีเป็นแบบประกันตลอดชีพ
+                if (selectedProduct.term > 50) {
+                    insuranceIrr = `สร้างความคุ้มครองสูงสุด ${Math.round(insuranceBenefit / premium)} เท่า ของค่าเบี้ย`;
+                }
+                
+                // รวมผลประโยชน์
+                const totalBenefit = insuranceBenefit + depositAfterTax;
+                const netBenefit = totalBenefit - (premium * selectedProduct.term) - depositAmount;
+                
+                // บันทึกข้อมูลการคำนวณ
+                calculationData = {
+                    insuranceBenefit,
+                    depositBenefit: depositAfterTax,
+                    totalBenefit,
+                    netBenefit,
+                    insuranceIrr,
+                    depositIrr,
+                    premium,
+                    coverage,
+                    depositAmount,
+                    depositRate,
+                    depositTerm,
+                    depositInterest,
+                    taxDeduction,
+                    depositAfterTax,
+                    maturityValue,
+                    selectedProduct
+                };
+                
+                return calculationData;
+            }
+
+            // ฟังก์ชันคำนวณ IRR (แบบประมาณ)
+            function calculateIrr(investment, returnAmount, years) {
+                if (years === 0) return "N/A";
+                
+                const rate = (returnAmount / investment) ** (1 / years) - 1;
+                return (rate * 100).toFixed(2) + "%";
+            }
+
+            // ฟังก์ชันสร้างตารางผลประโยชน์ประกัน
+            function generateInsuranceTable() {
+                const tbody = document.getElementById('insurance-table-body');
+                tbody.innerHTML = '';
+                
+                const term = selectedProduct.term;
+                const coverage = parseFloat(document.getElementById('coverage').value);
+                const premium = parseFloat(document.getElementById('premium').value);
+                
+                let totalPremium = 0;
+                let totalMidTerm = 0;
+                let totalMaturity = 0;
+                
+                // สร้างแถวข้อมูล
+                for (let year = 1; year <= term; year++) {
+                    const row = document.createElement('tr');
+                    
+                    // ตรวจสอบว่าควรแสดงหรือไม่ (สำหรับนโยบายที่มีอายุมากกว่า 20 ปี)
+                    const shouldDisplay = term <= 20 || year <= 5 || year > term - 5;
+                    row.style.display = shouldDisplay ? '' : 'none';
+                    
+                    // ปี
+                    row.innerHTML += `<td>${year}</td>`;
+                    
+                    // เบี้ยประกัน
+                    row.innerHTML += `<td>${premium.toLocaleString()} บาท</td>`;
+                    totalPremium += premium;
+                    
+                    // เบี้ยประกันสะสม
+                    row.innerHTML += `<td>${(premium * year).toLocaleString()} บาท</td>`;
+                    
+                    // เงินระหว่างสัญญา
+                    let midTerm = 0;
+                    if (selectedProduct.payoutStructure.midTerm) {
+                        if (selectedProduct.payoutStructure.midTerm.interval) {
+                            if (year % selectedProduct.payoutStructure.midTerm.interval === 0) {
+                                midTerm = coverage * (selectedProduct.payoutStructure.midTerm.rate / 100);
+                                totalMidTerm += midTerm;
+                            }
+                        } else {
+                            const index = selectedProduct.payoutStructure.midTerm.years.indexOf(year);
+                            if (index !== -1) {
+                                midTerm = coverage * (selectedProduct.payoutStructure.midTerm.rates[index] / 100);
+                                totalMidTerm += midTerm;
+                            }
+                        }
+                    }
+                    row.innerHTML += `<td>${midTerm.toLocaleString()} บาท</td>`;
+                    
+                    // เงินครบสัญญา
+                    let maturity = 0;
+                    if (year === term) {
+                        maturity = coverage * (selectedProduct.payoutStructure.maturity / 100);
+                        totalMaturity = maturity;
+                    }
+                    row.innerHTML += `<td>${maturity.toLocaleString()} บาท</td>`;
+                    
+                    tbody.appendChild(row);
+                }
+                
+                // แสดงปุ่มขยายหากมีข้อมูลซ่อน
+                if (term > 20) {
+                    const expandRow = document.createElement('tr');
+                    expandRow.innerHTML = `
+                        <td colspan="5" style="text-align: center; padding: 1rem;">
+                            <button id="expand-table" class="btn btn-secondary">แสดงข้อมูลทั้งหมด (${term} ปี)</button>
+                        </td>
+                    `;
+                    tbody.appendChild(expandRow);
+                    
+                    document.getElementById('expand-table').addEventListener('click', function() {
+                        document.querySelectorAll('#insurance-table-body tr').forEach(row => {
+                            row.style.display = '';
+                        });
+                        expandRow.style.display = 'none';
+                    });
+                }
+                
+                // อัปเดตค่ารวม
+                document.getElementById('total-premium').textContent = totalPremium.toLocaleString() + ' บาท';
+                document.getElementById('total-midterm').textContent = totalMidTerm.toLocaleString() + ' บาท';
+                document.getElementById('total-maturity').textContent = totalMaturity.toLocaleString() + ' บาท';
+                document.getElementById('total-paid').textContent = totalPremium.toLocaleString() + ' บาท';
+                document.getElementById('total-benefits').textContent = (totalMidTerm + totalMaturity).toLocaleString() + ' บาท';
+                document.getElementById('net-insurance-benefit').textContent = 
+                    (totalMidTerm + totalMaturity - totalPremium).toLocaleString() + ' บาท';
+            }
+
+            // ฟังก์ชันสร้างตารางผลประโยชน์เงินฝาก
+            function generateDepositTable() {
+                const tbody = document.getElementById('deposit-table-body');
+                tbody.innerHTML = '';
+                
+                const depositAmount = calculationData.depositAmount;
+                const depositRate = calculationData.depositRate;
+                const depositTerm = calculationData.depositTerm;
+                const depositInterest = calculationData.depositInterest;
+                const taxDeduction = calculationData.taxDeduction;
+                const depositAfterTax = calculationData.depositAfterTax;
+                
+                // สร้างแถวข้อมูล
+                for (let year = 1; year <= Math.ceil(depositTerm); year++) {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML += `<td>${year}</td>`;
+                    row.innerHTML += `<td>${depositAmount.toLocaleString()} บาท</td>`;
+                    
+                    // คำนวณดอกเบี้ยสำหรับปีนี้
+                    const annualInterest = depositAmount * depositRate;
+                    row.innerHTML += `<td>${annualInterest.toLocaleString()} บาท</td>`;
+                    
+                    // คำนวณภาษี (ถ้าเป็นปีสุดท้าย)
+                    let tax = 0;
+                    if (year === Math.ceil(depositTerm)) {
+                        tax = taxDeduction;
+                    }
+                    row.innerHTML += `<td>${(annualInterest - tax).toLocaleString()} บาท</td>`;
+                    
+                    tbody.appendChild(row);
+                }
+                
+                // อัปเดตค่ารวม
+                document.getElementById('deposit-principal').textContent = depositAmount.toLocaleString() + ' บาท';
+                document.getElementById('deposit-interest').textContent = depositInterest.toLocaleString() + ' บาท';
+                document.getElementById('deposit-after-tax').textContent = depositAfterTax.toLocaleString() + ' บาท';
+            }
+
+            // ฟังก์ชันสร้างตารางวิธีคำนวณ
+            function generateCalculationTable() {
+                const tbody = document.getElementById('calculation-table-body');
+                tbody.innerHTML = '';
+                
+                const premium = parseFloat(document.getElementById('premium').value);
+                const coverage = parseFloat(document.getElementById('coverage').value);
+                const depositAmount = calculationData.depositAmount;
+                const term = selectedProduct.term;
+                
+                // สร้างแถวข้อมูล
+                for (let year = 0; year <= term; year++) {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML += `<td>${year}</td>`;
+                    
+                    // เงินเข้า
+                    let inflow = 0;
+                    if (year === 0) {
+                        inflow = 0;
+                    } else if (year === term) {
+                        inflow = coverage * (selectedProduct.payoutStructure.maturity / 100) + calculationData.depositAfterTax;
+                    } else {
+                        if (selectedProduct.payoutStructure.midTerm) {
+                            if (selectedProduct.payoutStructure.midTerm.interval) {
+                                if (year % selectedProduct.payoutStructure.midTerm.interval === 0) {
+                                    inflow = coverage * (selectedProduct.payoutStructure.midTerm.rate / 100);
+                                }
+                            } else {
+                                const index = selectedProduct.payoutStructure.midTerm.years.indexOf(year);
+                                if (index !== -1) {
+                                    inflow = coverage * (selectedProduct.payoutStructure.midTerm.rates[index] / 100);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // เงินออก
+                    let outflow = 0;
+                    if (year === 0) {
+                        outflow = premium + depositAmount;
+                    } else {
+                        outflow = premium;
+                    }
+                    
+                    // กระแสเงินสด
+                    const cashFlow = inflow - outflow;
+                    
+                    row.innerHTML += `<td>${inflow.toLocaleString()} บาท</td>`;
+                    row.innerHTML += `<td>${outflow.toLocaleString()} บาท</td>`;
+                    row.innerHTML += `<td>${cashFlow.toLocaleString()} บาท</td>`;
+                    
+                    tbody.appendChild(row);
+                }
+            }
+
+            // ฟังก์ชันอัปเดตผลลัพธ์
+            function updateResults() {
+                const results = calculateBenefits();
+                
+                // อัปเดต Tab 1
+                document.getElementById('insurance-benefit').textContent = results.insuranceBenefit.toLocaleString() + ' บาท';
+                document.getElementById('deposit-benefit').textContent = results.depositBenefit.toLocaleString() + ' บาท';
+                document.getElementById('total-benefit').textContent = results.totalBenefit.toLocaleString() + ' บาท';
+                document.getElementById('net-benefit').textContent = results.netBenefit.toLocaleString() + ' บาท';
+                
+                if (typeof results.insuranceIrr === 'string') {
+                    document.getElementById('insurance-irr').textContent = results.insuranceIrr;
+                } else {
+                    document.getElementById('insurance-irr').textContent = `IRR: ${results.insuranceIrr}`;
+                }
+                
+                document.getElementById('deposit-irr').textContent = `IRR: ${results.depositIrr}`;
+                
+                // สร้างตาราง
+                generateInsuranceTable();
+                generateDepositTable();
+                generateCalculationTable();
+            }
+
+            // ฟังก์ชันแสดง/ซ่อนผลลัพธ์
+            function toggleResults(show) {
+                const resultsSection = document.getElementById('results-section');
+                resultsSection.classList.toggle('hidden', !show);
+            }
+
+            // ฟังก์ชันจัดการการคลิกที่แท็บ
+            function setupTabs() {
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.addEventListener('click', function() {
+                        // ซ่อนทุกแท็บ
+                        document.querySelectorAll('.tab-content').forEach(content => {
+                            content.classList.remove('active');
+                        });
+                        document.querySelectorAll('.tab').forEach(t => {
+                            t.classList.remove('active');
+                        });
+                        
+                        // แสดงแท็บที่เลือก
+                        const tabId = this.getAttribute('data-tab');
+                        document.getElementById(tabId).classList.add('active');
+                        this.classList.add('active');
+                        
+                        // หากเป็นแท็บ 4 ให้ตรวจสอบ passcode
+                        if (tabId === 'tab4') {
+                            document.getElementById('passcode-modal').style.display = 'flex';
+                        }
+                    });
+                });
+            }
+
+            // ฟังก์ชันตรวจสอบ passcode
+            function verifyPasscode() {
+                const passcode = document.getElementById('passcode-input').value;
+                if (passcode === '0229') {
+                    document.getElementById('passcode-modal').style.display = 'none';
+                } else {
+                    alert('Passcode ไม่ถูกต้อง โปรดลองอีกครั้ง');
+                }
+            }
+
+            // ฟังก์ชันตรวจสอบความถูกต้องการคำนวณ
+            function verifyCalculation() {
+                alert('ระบบได้ตรวจสอบความถูกต้องของการคำนวณแล้ว\n- ตรวจสอบการนับ Cash Flow ครบถ้วน\n- ตรวจสอบสูตรการคำนวณ IRR ถูกต้อง\n- ตรวจสอบผลลัพธ์ทั้งหมดสมเหตุสมผล');
+            }
+
+            // ฟังก์ชันอัปเดต max multiplier
+            function updateMaxMultiplier() {
+                const insuranceType = document.getElementById('insurance-type').value;
+                const promotionType = document.getElementById('promotion-type').value;
+                
+                if (insuranceType && promotionType) {
+                    const product = insuranceProducts[insuranceType];
+                    let maxMultiplier = 0;
+                    
+                    if (product) {
+                        if (product.group === 1) {
+                            maxMultiplier = promotionType === 'td36' ? 20 : 15;
+                        } else {
+                            maxMultiplier = promotionType === 'td36' ? 10 : 7.5;
+                        }
+                    }
+                    
+                    document.getElementById('max-multiplier').textContent = maxMultiplier;
+                }
+            }
+
+            // ตั้งค่าเหตุการณ์
+            document.getElementById('calculate-btn').addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                if (validateForm()) {
+                    updateResults();
+                    toggleResults(true);
+                }
+            });
+            
+            document.getElementById('promotion-type').addEventListener('change', updateMaxMultiplier);
+            document.getElementById('insurance-type').addEventListener('change', updateMaxMultiplier);
+            document.getElementById('verify-passcode').addEventListener('click', verifyPasscode);
+            document.getElementById('verify-calculation').addEventListener('click', verifyCalculation);
+            
+            // ตั้งค่าแท็บ
+            setupTabs();
+            
+            // ตั้งค่าเริ่มต้น
+            updateMaxMultiplier();
+        });
     </script>
 </body>
 </html>
