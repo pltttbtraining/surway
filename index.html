@@ -3,30 +3,45 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TAX Calculator — Single File (Fixed)</title>
+  <title>TAX Calculator — Full Fixed</title>
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
+    :root{
+      --bg:#f8fafc; --card:#ffffff; --muted:#6b7280;
+      --before:#3b82f6; --after:#10b981; --accent:#f59e0b;
+    }
     html,body,#root { height: 100%; }
-    body { -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+    body { -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; background:var(--bg); color:#0f172a; font-family:Inter,system-ui,Arial,sans-serif; }
+    /* Infographic specific small tweaks */
+    .infograph-root { width:100%; max-width:960px; margin:0 auto; }
+    .coin { width:54px; height:54px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; box-shadow: 0 6px 14px rgba(15,23,42,0.08); transition: transform .36s cubic-bezier(.2,.9,.3,1), opacity .3s; }
+    .coin.small { width:44px; height:44px; }
+    .coin-label { font-size:11px; }
+    .icons-wrap { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .infocard { background:var(--card); padding:14px; border-radius:12px; box-shadow: 0 6px 18px rgba(15,23,42,0.04); }
+    .tooltip {
+      pointer-events:none; position: absolute; background: #111827; color: white; padding:6px 8px; border-radius:6px; font-size:12px; transform: translate(-50%, -120%); white-space:nowrap; opacity:0; transition: opacity .12s;
+    }
+    .animate-pop { transform: translateY(-6px) scale(1.03); }
   </style>
 </head>
-<body class="bg-gray-100">
+<body>
 
   <div id="root"></div>
 
   <script type="module">
-  import React, { useState, useMemo } from "https://esm.sh/react@18.2.0";
+  import React, { useState, useMemo, useRef, useEffect } from "https://esm.sh/react@18.2.0";
   import { createRoot } from "https://esm.sh/react-dom@18.2.0/client";
   import {
     Calculator, PieChart, Sliders, BookOpen, Menu, X, ChevronDown,
     Plus, Info, Lightbulb, ShieldCheck, Activity, HeartPulse,
-    Umbrella, Coins, TrendingUp, CheckCircle, Home, Users, Gift
+    Umbrella, Coins, TrendingUp, CheckCircle, Home, Users, Gift, DownloadCloud
   } from "https://esm.sh/lucide-react@0.259.0";
 
-  // --- Data ---
+  /***** Constants & Data (as before) *****/
   const INCOME_TYPES = [
     { id: 1, name: '40(1) เงินเดือน/โบนัส', desc: 'เงินเดือน ค่าจ้าง โบนัส บำนาญ', deductionDesc: '50% ไม่เกิน 100,000', defaultRate: 0.5, hasFixedCap: true },
     { id: 2, name: '40(2) รับทำงานให้', desc: 'ค่านายหน้า ค่าคอมมิชชั่น ค่ารับเหมาแรงงาน', deductionDesc: '50% ไม่เกิน 100,000 (รวมกับ 40(1))', defaultRate: 0.5, hasFixedCap: true },
@@ -109,7 +124,7 @@
     },
   ];
 
-  // --- Helpers ---
+  /***** Helper Functions *****/
   const calculateTaxFromNet = (netIncome) => {
     let taxPayable = 0;
     let remainingNet = netIncome;
@@ -130,47 +145,51 @@
     return { taxPayable, highestBracket };
   };
 
+  /***** CircularProgress & Modal *****/
   const CircularProgress = ({ percentage, color, label, subLabel }) => {
     const radius = 35;
     const circumference = 2 * Math.PI * radius;
     const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
-    return React.createElement('div', { className: "flex flex-col items-center" },
-      React.createElement('div', { className: "relative w-24 h-24" },
-        React.createElement('svg', { viewBox: "0 0 96 96", className: "transform -rotate-90 w-24 h-24" },
-          React.createElement('circle', { className: "text-gray-200", strokeWidth: "8", stroke: "currentColor", fill: "transparent", r: radius, cx: "48", cy: "48" }),
-          React.createElement('circle', { className: `${color} transition-all duration-1000 ease-out`, strokeWidth: "8", strokeDasharray: circumference, strokeDashoffset, strokeLinecap: "round", stroke: "currentColor", fill: "transparent", r: radius, cx: "48", cy: "48" })
+    return (
+      React.createElement('div', { className: "flex flex-col items-center" },
+        React.createElement('div', { className: "relative w-24 h-24" },
+          React.createElement('svg', { viewBox: "0 0 96 96", className: "transform -rotate-90 w-24 h-24" },
+            React.createElement('circle', { className: "text-gray-200", strokeWidth: "8", stroke: "currentColor", fill: "transparent", r: radius, cx: "48", cy: "48" }),
+            React.createElement('circle', { className: `${color} transition-all duration-1000 ease-out`, strokeWidth: "8", strokeDasharray: circumference, strokeDashoffset, strokeLinecap: "round", stroke: "currentColor", fill: "transparent", r: radius, cx: "48", cy: "48" })
+          ),
+          React.createElement('div', { className: "absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center text-gray-700" },
+            React.createElement('span', { className: "text-xl font-bold" }, Math.min(percentage, 100).toFixed(0) + '%')
+          )
         ),
-        React.createElement('div', { className: "absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center text-gray-700" },
-          React.createElement('span', { className: "text-xl font-bold" }, Math.min(percentage, 100).toFixed(0) + '%')
-        )
-      ),
-      React.createElement('span', { className: "mt-2 text-sm font-medium text-gray-700" }, label),
-      React.createElement('span', { className: "text-xs text-gray-500" }, subLabel)
+        React.createElement('span', { className: "mt-2 text-sm font-medium text-gray-700" }, label),
+        React.createElement('span', { className: "text-xs text-gray-500" }, subLabel)
+      )
     );
   };
 
   const Modal = ({ isOpen, onClose, title, content }) => {
     if (!isOpen) return null;
-    return React.createElement('div', { className: "fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" },
-      React.createElement('div', { className: "bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden" },
-        React.createElement('div', { className: "px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50" },
-          React.createElement('h3', { className: "font-semibold text-gray-800 flex items-center gap-2" },
-            React.createElement(Lightbulb, { className: "w-5 h-5 text-yellow-500" }),
-            title
+    return (
+      React.createElement('div', { className: "fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4" },
+        React.createElement('div', { className: "bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden" },
+          React.createElement('div', { className: "px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50" },
+            React.createElement('h3', { className: "font-semibold text-gray-800 flex items-center gap-2" },
+              React.createElement(Lightbulb, { className: "w-5 h-5 text-yellow-500" }),
+              title
+            ),
+            React.createElement('button', { onClick: onClose, className: "text-gray-400 hover:text-gray-600" }, React.createElement(X, { size: 20 }))
           ),
-          React.createElement('button', { onClick: onClose, className: "text-gray-400 hover:text-gray-600" },
-            React.createElement(X, { size: 20 })
-          )
-        ),
-        React.createElement('div', { className: "p-6 text-gray-600 text-sm leading-relaxed whitespace-pre-line" }, content)
+          React.createElement('div', { className: "p-6 text-gray-600 text-sm leading-relaxed whitespace-pre-line" }, content)
+        )
       )
     );
   };
 
+  /***** AdvisorScriptNew - FULL 4 TYPES (restored & detailed) *****/
   const AdvisorScriptNew = ({ taxDetails, simTotals }) => {
     const [selectedScript, setSelectedScript] = useState(null);
-    const { gaps, highestBracket } = taxDetails;
+    const { gaps, highestBracket, taxPayable } = taxDetails;
     const taxSavingPotential = simTotals.taxSaved;
 
     const scriptOptions = [
@@ -181,13 +200,20 @@
         color: 'blue',
         condition: gaps.lifeGap > 0,
         content: React.createElement('div', { className: "space-y-4" },
-          React.createElement('h3', { className: "font-bold text-blue-800" }, "บทพูดแนะนำ: ประกันสะสมทรัพย์ (เน้นสร้างวินัย+ลดหย่อน)"),
-          React.createElement('p', { className: "text-gray-700 italic" }, '"สำหรับส่วนแรกที่อยากแนะนำคือ \'ประกันสะสมทรัพย์\' ครับ..."'),
+          React.createElement('h3', { className: "font-bold text-blue-800" }, "บทพูดแนะนำ: ประกันสะสมทรัพย์ (เน้นวินัยเก็บเงิน+ลดหย่อนภาษี)"),
+          React.createElement('p', { className: "text-gray-700" }, '"สำหรับลูกค้าที่ต้องการทั้งการออมและสิทธิ์ลดหย่อนภาษี แนะนำประกันสะสมทรัพย์ครับ — ได้ทั้งเงินออมและความคุ้มครอง"'),
           React.createElement('div', { className: "bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500" },
-            React.createElement('strong', null, "จุดเชื่อมโยงข้อมูลลูกค้า:"),
+            React.createElement('strong', null, "เชื่อมโยงข้อมูล:"),
             React.createElement('ul', { className: "list-disc list-inside mt-2 text-sm text-blue-900" },
-              React.createElement('li', null, "ตอนนี้สิทธิ์ประกันชีวิตทั่วไป 1 แสนบาทแรก คุณลูกค้ายังเหลืออีก ", React.createElement('strong', null, gaps.lifeGap.toLocaleString() + " บาท")),
-              React.createElement('li', null, "ถ้าเติมส่วนนี้ให้เต็ม นอกจากจะได้เงินเก็บแล้ว ยังช่วยลดภาษีได้ทันทีตามฐานภาษีสูงสุดที่ ", React.createElement('strong', null, highestBracket + "%"), " เลยครับ")
+              React.createElement('li', null, "สิทธิ์ประกันชีวิตทั่วไปเหลือ ", React.createElement('strong', null, gaps.lifeGap.toLocaleString() + " บาท")),
+              React.createElement('li', null, "ประโยชน์: ได้ทั้งสภาพคล่องระยะยาวและการลดหย่อนภาษีทันที")
+            )
+          ),
+          React.createElement('div', null,
+            React.createElement('strong', null, "แนวถามเพื่อเก็บข้อมูล:"),
+            React.createElement('ul', { className: "list-disc list-inside mt-2 text-sm text-gray-700" },
+              React.createElement('li', null, "เป้าหมายการออมของคุณใน 5 ปีข้างหน้าเป็นอย่างไร?"),
+              React.createElement('li', null, "ยอมรับสภาพคล่องที่ผูกมัดได้หรือไม่ เพราะอาจต้องถือครบสัญญาเพื่อสิทธิ์เต็ม")
             )
           )
         )
@@ -199,46 +225,373 @@
         color: 'indigo',
         condition: gaps.lifeGap > 0,
         content: React.createElement('div', { className: "space-y-4" },
-          React.createElement('h3', { className: "font-bold text-indigo-800" }, "บทพูดแนะนำ: ประกันตลอดชีพ"),
-          React.createElement('p', { className: "text-gray-700 italic" }, '"ถ้าคุณลูกค้ามองหาความอุ่นใจระยะยาว..."')
+          React.createElement('h3', { className: "font-bold text-indigo-800" }, "บทพูดแนะนำ: ประกันตลอดชีพ (เน้นคุ้มครองสูง+มรดก)"),
+          React.createElement('p', { className: "text-gray-700" }, '"เหมาะกับลูกค้าที่ต้องการความคุ้มครองสูงและไม่ต้องการนำเงินก้อนมาเป็นมรดก — เบี้ยอาจถูกกว่าในบางกรณีเมื่อเทียบความคุ้มครอง"'),
+          React.createElement('div', { className: "bg-indigo-50 p-4 rounded-lg border-l-4 border-indigo-500" },
+            React.createElement('strong', null, "เชื่อมโยงข้อมูล:"),
+            React.createElement('ul', { className: "list-disc list-inside mt-2 text-sm text-indigo-900" },
+              React.createElement('li', null, "ใช้สิทธิ์เบี้ยประกันชีวิตที่เหลือ ", React.createElement('strong', null, gaps.lifeGap.toLocaleString() + " บาท"), " ได้เช่นกัน"),
+              React.createElement('li', null, "เหมาะเมื่อเป้าหมายคือการส่งมรดก/ความคุ้มครองระยะยาว")
+            )
+          ),
+          React.createElement('div', null,
+            React.createElement('strong', null, "แนวถามเพื่อเก็บข้อมูล:"),
+            React.createElement('ul', { className: "list-disc list-inside mt-2 text-sm text-gray-700" },
+              React.createElement('li', null, "คุณมีแผนจะส่งมรดก/เงินก้อนให้ทายาทหรือไม่?"),
+              React.createElement('li', null, "ต้องการคุ้มครองชีวิตสูงแค่ไหน (เทียบเป็นเท่าของรายได้ประจำปี)?")
+            )
+          )
+        )
+      },
+      {
+        id: 'health',
+        icon: HeartPulse,
+        title: '3. แนะนำประกันสุขภาพ',
+        color: 'pink',
+        condition: true,
+        content: React.createElement('div', { className: "space-y-4" },
+          React.createElement('h3', { className: "font-bold text-pink-800" }, "บทพูดแนะนำ: ประกันสุขภาพ (เน้นป้องกันความเสี่ยงค่ารักษา)"),
+          React.createElement('p', { className: "text-gray-700" }, '"ค่าใช้จ่ายด้านการรักษาพยาบาลสูงขึ้นทุกปี การมีประกันสุขภาพที่ครอบคลุมจะช่วยลดความเสี่ยงทางการเงินได้มาก"'),
+          React.createElement('div', { className: "bg-pink-50 p-4 rounded-lg border-l-4 border-pink-500" },
+            React.createElement('strong', null, "เชื่อมโยงข้อมูล:"),
+            React.createElement('ul', { className: "list-disc list-inside mt-2 text-sm text-pink-900" },
+              React.createElement('li', null, "เบี้ยประกันสุขภาพนำมาหักรวมกับเบี้ยประกันชีวิตได้ (จำกัด 100,000 บาท)"),
+              React.createElement('li', null, "ถ้าคุณกังวลเรื่องค่ารักษา แผนนี้ช่วยลดภาระให้ครอบครัวได้ทันที")
+            )
+          ),
+          React.createElement('div', null,
+            React.createElement('strong', null, "แนวถามเพื่อเก็บข้อมูล:"),
+            React.createElement('ul', { className: "list-disc list-inside mt-2 text-sm text-gray-700" },
+              React.createElement('li', null, "โรงพยาบาลที่คุณใช้ประจำคือที่ไหน? ต้องการวงเงินค่าห้องเท่าไร?"),
+              React.createElement('li', null, "มีเงื่อนไขโรคประจำตัวหรือไม่ (เพื่อให้แนะนำแผนที่เหมาะสม)")
+            )
+          )
+        )
+      },
+      {
+        id: 'pension',
+        icon: TrendingUp,
+        title: '4. แนะนำประกันบำนาญ',
+        color: 'purple',
+        condition: gaps.pensionGap > 0,
+        content: React.createElement('div', { className: "space-y-4" },
+          React.createElement('h3', { className: "font-bold text-purple-800" }, "บทพูดแนะนำ: ประกันบำนาญ (เน้นวางแผนเกษียณ+ลดหย่อนเพิ่ม)"),
+          React.createElement('p', { className: "text-gray-700" }, '"ถ้าคุณต้องการรายได้ยามเกษียณที่มั่นคงและต้องการลดหย่อนภาษีเพิ่มเติม ประกันบำนาญเป็นทางเลือกที่ดี ที่ให้ทั้งรายได้ในอนาคตและได้สิทธิ์ลดหย่อน' ),
+          React.createElement('div', { className: "bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500" },
+            React.createElement('strong', null, "เชื่อมโยงข้อมูล:"),
+            React.createElement('ul', { className: "list-disc list-inside mt-2 text-sm text-purple-900" },
+              React.createElement('li', null, "สิทธิ์บำนาญที่ใช้ได้อีกประมาณ ", React.createElement('strong', null, gaps.pensionGap.toLocaleString() + " บาท")),
+              React.createElement('li', null, "สามารถช่วยลดภาระภาษีปีนี้และสร้างสภาพคล่องหลังเกษียณ")
+            )
+          ),
+          React.createElement('div', null,
+            React.createElement('strong', null, "แนวถามเพื่อเก็บข้อมูล:"),
+            React.createElement('ul', { className: "list-disc list-inside mt-2 text-sm text-gray-700" },
+              React.createElement('li', null, "แผนเกษียณที่ต้องการคือรายได้ต่อเดือนเท่าไรเมื่อเกษียณ?"),
+              React.createElement('li', null, "ยอมรับการล็อกเงินจนถึงอายุที่กำหนดหรือไม่?")
+            )
+          ),
+          taxSavingPotential > 0 && React.createElement('div', { className: "mt-2 p-3 rounded bg-green-50 border-l-4 border-green-400 text-sm text-green-900" },
+            React.createElement('strong', null, "ตัวอย่างผลลัพธ์: "), "หากเติมสิทธิ์บำนาญ คุณจะประหยัดภาษีได้ประมาณ ", React.createElement('strong', null, taxSavingPotential.toLocaleString() + " บาท")
+          )
         )
       }
     ];
 
-    return React.createElement('div', { className: "space-y-6" },
-      React.createElement('div', { className: "bg-white rounded-xl shadow-sm border border-gray-100 p-6" },
-        React.createElement('h2', { className: "text-xl font-bold text-gray-800 flex items-center gap-2 mb-4" },
-          React.createElement(BookOpen, { className: "w-6 h-6 text-blue-600" }),
-          "เลือกบทแนะนำผลิตภัณฑ์ (Advisor Script)"
-        ),
-        React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4" },
-          scriptOptions.map((option) =>
-            React.createElement('button', {
-              key: option.id,
-              onClick: () => setSelectedScript(option.id),
-              className: `p-4 rounded-xl border-2 transition-all flex items-start gap-3 text-left group ${selectedScript === option.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'}`
-            },
-              React.createElement('div', { className: `p-3 rounded-full bg-blue-100 text-blue-600 group-hover:scale-110 transition-transform` },
-                React.createElement(option.icon, { size: 24 })
-              ),
-              React.createElement('div', null,
-                React.createElement('h3', { className: "font-bold text-lg text-gray-800" }, option.title),
-                option.condition ?
-                  React.createElement('span', { className: "text-xs text-green-600 flex items-center gap-1 mt-1" }, React.createElement(CheckCircle, { size: 12 }), " ยังมีช่องว่างสิทธิ์")
-                  :
-                  React.createElement('span', { className: "text-xs text-gray-400 flex items-center gap-1 mt-1" }, "สิทธิ์เต็มแล้ว/ไม่แนะนำ")
+    return (
+      React.createElement('div', { className: "space-y-6 animate-in fade-in duration-300" },
+        React.createElement('div', { className: "bg-white rounded-xl shadow-sm border border-gray-100 p-6" },
+          React.createElement('h2', { className: "text-xl font-bold text-gray-800 flex items-center gap-2 mb-4" },
+            React.createElement(BookOpen, { className: "w-6 h-6 text-blue-600" }),
+            "เลือกบทแนะนำผลิตภัณฑ์ (Advisor Script)"
+          ),
+          React.createElement('p', { className: "text-gray-600 mb-6" }, "เลือกประเภทผลิตภัณฑ์ที่เหมาะสมกับลูกค้า เพื่อดูบทพูดแนะนำ"),
+          React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-4" },
+            scriptOptions.map((option) =>
+              React.createElement('button', {
+                key: option.id,
+                onClick: () => setSelectedScript(option.id),
+                className: `p-4 rounded-xl border-2 transition-all flex items-start gap-3 text-left relative overflow-hidden group ${selectedScript === option.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'}`
+              },
+                React.createElement('div', { className: `p-3 rounded-full bg-blue-100 text-blue-600 group-hover:scale-110 transition-transform` },
+                  React.createElement(option.icon, { size: 24 })
+                ),
+                React.createElement('div', null,
+                  React.createElement('h3', { className: "font-bold text-lg text-gray-800 group-hover:text-blue-700" }, option.title),
+                  option.condition ?
+                    React.createElement('span', { className: "text-xs text-green-600 flex items-center gap-1 mt-1" }, React.createElement(CheckCircle, { size: 12 }), " ยังมีช่องว่างสิทธิ์")
+                    :
+                    React.createElement('span', { className: "text-xs text-gray-400 flex items-center gap-1 mt-1" }, "อาจไม่มีความจำเป็นเร่งด่วน")
+                )
               )
             )
           )
+        ),
+        selectedScript && React.createElement('div', { className: "bg-white rounded-xl shadow-lg border border-blue-100 overflow-hidden animate-in slide-in-from-bottom-2" },
+          React.createElement('div', { className: "p-6" },
+            scriptOptions.find(opt => opt.id === selectedScript)?.content
+          )
         )
-      ),
-      selectedScript && React.createElement('div', { className: "bg-white rounded-xl shadow-lg border border-blue-100 p-6" },
-        scriptOptions.find(opt => opt.id === selectedScript)?.content
       )
     );
   };
 
-  // --- App ---
+  /***** InfographicCard component (with mobile tap tooltip) *****/
+  function InfographicCard({ totalIncome, taxBefore, taxAfter, unitDefault = 5000 }) {
+    const svgRef = useRef(null);
+    const wrapperRef = useRef(null);
+    const [unit, setUnit] = useState(unitDefault);
+    const [maxIcons, setMaxIcons] = useState(12);
+    const [hoverInfo, setHoverInfo] = useState({ text: '', x: 0, y: 0, visible: false });
+
+    const compute = useMemo(() => {
+      const safe = (n) => (Number(n) || 0);
+      const income = safe(totalIncome);
+      const before = safe(taxBefore);
+      const after = safe(taxAfter);
+      const countBefore = Math.max(1, Math.min(maxIcons, Math.round(before / unit) || 1));
+      const countAfter = Math.max(1, Math.min(maxIcons, Math.round(after / unit) || 1));
+      const scaleBefore = 0.9 + Math.min(1.2, (before / Math.max(1, income)) * 2.8);
+      const scaleAfter = 0.9 + Math.min(1.2, (after / Math.max(1, income)) * 2.8);
+      const pctBefore = income > 0 ? (before / income * 100) : 0;
+      const pctAfter = income > 0 ? (after / income * 100) : 0;
+      return { income, before, after, countBefore, countAfter, scaleBefore, scaleAfter, pctBefore, pctAfter };
+    }, [totalIncome, taxBefore, taxAfter, unit, maxIcons]);
+
+    function coinLabel(amount) {
+      if (Math.abs(amount) >= 1000000) return Math.round(amount/1000000)+'M';
+      if (Math.abs(amount) >= 1000) return Math.round(amount/1000)+'k';
+      return amount;
+    }
+
+    const coinsBefore = Array.from({length: compute.countBefore}).map((_, i) => ({
+      id: 'b' + i,
+      color: getComputedStyle(document.documentElement).getPropertyValue('--before').trim() || '#3b82f6',
+      label: coinLabel(Math.round(compute.before / compute.countBefore))
+    }));
+    const coinsAfter = Array.from({length: compute.countAfter}).map((_, i) => ({
+      id: 'a' + i,
+      color: getComputedStyle(document.documentElement).getPropertyValue('--after').trim() || '#10b981',
+      label: coinLabel(Math.round(compute.after / compute.countAfter))
+    }));
+
+    // Export SVG
+    const downloadSVG = () => {
+      if (!svgRef.current) return;
+      const svgEl = svgRef.current;
+      const serializer = new XMLSerializer();
+      let source = serializer.serializeToString(svgEl);
+      if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+      }
+      const svgBlob = new Blob([source], {type:"image/svg+xml;charset=utf-8"});
+      const url = URL.createObjectURL(svgBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'tax-infographic.svg';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    // Export PNG
+    const downloadPNG = () => {
+      if (!svgRef.current) return;
+      const svgEl = svgRef.current;
+      const serializer = new XMLSerializer();
+      let source = serializer.serializeToString(svgEl);
+      if(!source.match(/^<svg[^>]+xmlns="http\:\/\/www\.w3\.org\/2000\/svg"/)){
+        source = source.replace(/^<svg/, '<svg xmlns="http://www.w3.org/2000/svg"');
+      }
+      const svg64 = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(source);
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const rect = svgEl.getBoundingClientRect();
+        const ratio = window.devicePixelRatio || 1;
+        canvas.width = rect.width * ratio;
+        canvas.height = rect.height * ratio;
+        const ctx = canvas.getContext('2d');
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0,0, rect.width, rect.height);
+        ctx.drawImage(img, 0, 0, rect.width, rect.height);
+        canvas.toBlob((blob) => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'tax-infographic.png';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        }, 'image/png', 0.95);
+      };
+      img.onerror = () => {
+        alert('ไม่สามารถแปลงเป็น PNG ได้ (ตรวจสอบ SVG/เบราว์เซอร์)');
+      };
+      img.src = svg64;
+    };
+
+    // hover handlers (desktop)
+    function handleMouseEnterSVG(e, text) {
+      const rect = wrapperRef.current?.getBoundingClientRect();
+      const x = e.clientX - (rect?.left || 0);
+      const y = e.clientY - (rect?.top || 0);
+      setHoverInfo({ text, x, y, visible: true });
+    }
+    function handleMouseLeaveSVG() {
+      setHoverInfo({ text: '', x: 0, y: 0, visible: false });
+    }
+
+    // tap handler for mobile (toggle)
+    function handleTapSVG(e, text) {
+      // prevent mouse event dual-firing
+      e.stopPropagation();
+      const touch = e.touches ? e.touches[0] : e;
+      const rect = wrapperRef.current?.getBoundingClientRect();
+      const x = (touch && touch.clientX ? touch.clientX - (rect?.left || 0) : (e.clientX || 0));
+      const y = (touch && touch.clientY ? touch.clientY - (rect?.top || 0) : (e.clientY || 0));
+      // toggle visible
+      setHoverInfo(prev => {
+        if (prev.visible && prev.text === text) return { text: '', x: 0, y: 0, visible: false };
+        return { text, x, y, visible: true };
+      });
+    }
+
+    // close tooltip when tapping elsewhere (mobile)
+    useEffect(() => {
+      function handleDocTap() {
+        setHoverInfo({ text: '', x: 0, y: 0, visible: false });
+      }
+      document.addEventListener('touchstart', handleDocTap);
+      document.addEventListener('click', handleDocTap);
+      return () => {
+        document.removeEventListener('touchstart', handleDocTap);
+        document.removeEventListener('click', handleDocTap);
+      };
+    }, []);
+
+    return (
+      React.createElement('div', { className: "infograph-root" },
+        React.createElement('div', { className: "infocard mb-4" },
+          React.createElement('div', { className: "flex items-start justify-between gap-4" },
+            React.createElement('div', null,
+              React.createElement('h3', { className: "text-lg font-bold mb-1" }, "Infographic: เปรียบเทียบภาษีก่อน/หลัง"),
+              React.createElement('div', { className: "text-sm text-gray-600" }, `รายได้รวม: ${compute.income.toLocaleString()} ฿ — ภาษีก่อน: ${compute.before.toLocaleString()} ฿ — ภาษีหลัง: ${compute.after.toLocaleString()} ฿`)
+            ),
+            React.createElement('div', { className: "flex items-center gap-2" },
+              React.createElement('button', { onClick: downloadSVG, className: "bg-white border px-3 py-2 rounded-md flex items-center gap-2 hover:shadow-sm" }, React.createElement(DownloadCloud, { size: 16 }), "ดาวน์โหลด SVG"),
+              React.createElement('button', { onClick: downloadPNG, className: "bg-blue-600 text-white px-3 py-2 rounded-md flex items-center gap-2 hover:bg-blue-700" }, "ดาวน์โหลด PNG")
+            )
+          ),
+          React.createElement('div', { className: "mt-3 flex gap-3 flex-wrap items-center" },
+            React.createElement('label', { className: "text-sm text-gray-600" }, "หน่วยต่อไอคอน (บาท)"),
+            React.createElement('input', {
+              type: "number",
+              min: 100,
+              step: 100,
+              value: unit,
+              onChange: (e) => setUnit(Number(e.target.value) || 1),
+              className: "w-28 px-3 py-1 rounded border"
+            }),
+            React.createElement('label', { className: "text-sm text-gray-600" }, "จำนวนไอคอนสูงสุด"),
+            React.createElement('input', {
+              type: "number",
+              min: 3,
+              max: 24,
+              value: maxIcons,
+              onChange: (e) => setMaxIcons(Math.max(3, Math.min(24, Number(e.target.value) || 3))),
+              className: "w-20 px-3 py-1 rounded border"
+            })
+          )
+        ),
+
+        React.createElement('div', { ref: wrapperRef, style: { position:'relative' } },
+          hoverInfo.visible && React.createElement('div', {
+            className: "tooltip",
+            style: { left: hoverInfo.x + 'px', top: hoverInfo.y + 'px', opacity: hoverInfo.visible ? 1 : 0 }
+          }, hoverInfo.text),
+
+          React.createElement('svg', {
+            ref: svgRef,
+            width: "100%",
+            viewBox: "0 0 900 420",
+            preserveAspectRatio: "xMidYMid meet",
+            style: { borderRadius:12, background:'#ffffff', boxShadow:'0 8px 24px rgba(15,23,42,0.06)' }
+          },
+            React.createElement('rect', { x: 20, y: 20, width: 420, height: 380, rx: 12, fill: '#fbfdff' }),
+            React.createElement('rect', { x: 460, y: 20, width: 420, height: 380, rx: 12, fill: '#fbfffb' }),
+
+            React.createElement('text', { x: 230, y: 50, textAnchor: "middle", fontSize: 18, fontWeight: 700, fill: "#0f172a" }, "ก่อนทำประกัน"),
+            React.createElement('text', { x: 680, y: 50, textAnchor: "middle", fontSize: 18, fontWeight: 700, fill: "#0f172a" }, "หลังทำประกัน"),
+            React.createElement('text', { x: 450, y: 100, textAnchor: "middle", fontSize: 14, fill: "#374151" }, `รายได้รวม: ${compute.income.toLocaleString()} ฿`),
+            React.createElement('text', { x: 230, y: 84, textAnchor: "middle", fontSize: 14, fill: "#2563eb", fontWeight: 600 }, `${compute.before.toLocaleString()} ฿`),
+            React.createElement('text', { x: 680, y: 84, textAnchor: "middle", fontSize: 14, fill: "#059669", fontWeight: 600 }, `${compute.after.toLocaleString()} ฿`),
+
+            React.createElement('g', { transform: `translate(40,120)` },
+              coinsBefore.map((c, idx) => {
+                const cols = 6;
+                const gap = 68;
+                const cx = (idx % cols) * gap + 40;
+                const cy = Math.floor(idx / cols) * gap + 30;
+                const scale = compute.scaleBefore;
+                const transform = `translate(${cx},${cy}) scale(${scale})`;
+                const tooltipText = `ภาษี: ${Math.round(compute.before/compute.countBefore).toLocaleString()} ฿`;
+                return React.createElement('g', {
+                  key: c.id,
+                  transform,
+                  onMouseEnter: (e) => handleMouseEnterSVG(e, tooltipText),
+                  onMouseLeave: () => handleMouseLeaveSVG(),
+                  onTouchStart: (e) => handleTapSVG(e, tooltipText),
+                  onClick: (e) => handleTapSVG(e, tooltipText)
+                },
+                  React.createElement('rect', { x: -28, y: -20, width: 56, height: 40, rx: 8, fill: c.color, opacity: 1 }),
+                  React.createElement('text', { x: 0, y: 7, textAnchor: "middle", fontSize: 11, fill: "#fff", fontWeight: 700 }, c.label)
+                );
+              })
+            ),
+
+            React.createElement('g', { transform: `translate(480,120)` },
+              coinsAfter.map((c, idx) => {
+                const cols = 6;
+                const gap = 68;
+                const cx = (idx % cols) * gap + 40;
+                const cy = Math.floor(idx / cols) * gap + 30;
+                const scale = compute.scaleAfter;
+                const transform = `translate(${cx},${cy}) scale(${scale})`;
+                const tooltipText = `ภาษี: ${Math.round(compute.after/compute.countAfter).toLocaleString()} ฿`;
+                return React.createElement('g', {
+                  key: c.id,
+                  transform,
+                  onMouseEnter: (e) => handleMouseEnterSVG(e, tooltipText),
+                  onMouseLeave: () => handleMouseLeaveSVG(),
+                  onTouchStart: (e) => handleTapSVG(e, tooltipText),
+                  onClick: (e) => handleTapSVG(e, tooltipText)
+                },
+                  React.createElement('rect', { x: -28, y: -20, width: 56, height: 40, rx: 8, fill: c.color, opacity: 1 }),
+                  React.createElement('text', { x: 0, y: 7, textAnchor: "middle", fontSize: 11, fill: "#fff", fontWeight: 700 }, c.label)
+                );
+              })
+            ),
+
+            React.createElement('rect', { x: 60, y: 320, width: 340, height: 18, rx: 9, fill: '#e6eefc' }),
+            React.createElement('rect', { x: 60, y: 320, width: Math.max(8, Math.min(340, (compute.pctBefore/100)*340)), height: 18, rx: 9, fill: getComputedStyle(document.documentElement).getPropertyValue('--before').trim() || '#3b82f6' }),
+            React.createElement('text', { x: 230, y: 355, textAnchor: "middle", fontSize: 12, fill: "#374151" }, `คิดเป็น ${compute.pctBefore.toFixed(1)}% ของรายได้`),
+
+            React.createElement('rect', { x: 500, y: 320, width: 340, height: 18, rx: 9, fill: '#eefbeb' }),
+            React.createElement('rect', { x: 500, y: 320, width: Math.max(8, Math.min(340, (compute.pctAfter/100)*340)), height: 18, rx: 9, fill: getComputedStyle(document.documentElement).getPropertyValue('--after').trim() || '#10b981' }),
+            React.createElement('text', { x: 680, y: 355, textAnchor: "middle", fontSize: 12, fill: "#374151" }, `คิดเป็น ${compute.pctAfter.toFixed(1)}% ของรายได้`),
+
+            React.createElement('text', { x: 450, y: 400, textAnchor: "middle", fontSize: 11, fill: "#6b7280" }, "ไอคอนแต่ละชิ้นแสดงหน่วยต่อไอคอนที่ตั้งไว้")
+          )
+        )
+      )
+    );
+  }
+
+  /***** Main App *****/
   function App() {
     const [activeTab, setActiveTab] = useState('income');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -246,7 +599,7 @@
 
     const [incomeMode, setIncomeMode] = useState('monthly'); // monthly, yearly
     const [incomes, setIncomes] = useState([
-      { typeId: 1, amount: 0, active: true, expenseRate: INCOME_TYPES[0].defaultRate },
+      { typeId: 1, amount: 30000, active: true, expenseRate: INCOME_TYPES[0].defaultRate },
       { typeId: 2, amount: 0, active: false, expenseRate: INCOME_TYPES[1].defaultRate },
       { typeId: 3, amount: 0, active: false, expenseRate: INCOME_TYPES[2].defaultRate },
       ...INCOME_TYPES.slice(3).map(t => ({ typeId: t.id, amount: 0, active: false, expenseRate: t.defaultRate }))
@@ -261,7 +614,6 @@
     const [simLife, setSimLife] = useState(0);
     const [simPension, setSimPension] = useState(0);
 
-    // Normalize input in one place
     const handleIncomeChange = (id, field, val) => {
       let normalized = val;
       if (field === 'amount' || field === 'expenseRate') {
@@ -282,8 +634,10 @@
 
     const calculateResults = useMemo(() => {
       const multiplier = incomeMode === 'monthly' ? 12 : 1;
+
       let totalIncome = 0;
       let totalExpenses = 0;
+
       const activeIncomes = incomes.filter(i => i.active);
 
       const type1 = activeIncomes.find(i => i.typeId === 1);
@@ -318,6 +672,7 @@
 
       const familyDeduction = (deductions.spouse || 0) + childDeduction + parentDeduction;
       const socialDeduction = Math.min(deductions.socialSecurity || 0, 9000);
+
       const mortgageInterestDeduction = Math.min(deductions.mortgageInterest || 0, 50000);
 
       const calcDeductionsWithSim = (simL, simP) => {
@@ -344,6 +699,7 @@
         const simContribution = simP;
 
         const TIER1_LIMIT = 100000;
+
         const remainingTier1Quota = Math.max(0, TIER1_LIMIT - basePensionDeductible);
 
         if (simContribution > 0) {
@@ -388,13 +744,8 @@
 
         const incomeAfterExpensesAndOtherDeductions = Math.max(0, totalIncome - totalExpenses - totalNonDonationDeductions);
 
-        const generalDonationCap = incomeAfterExpensesAndOtherDeductions * 0.10;
-        const finalGeneralDonation = Math.min(deductions.generalDonation || 0, generalDonationCap);
-
-        const doubleDonationInput = deductions.educationDonation || 0;
-        const doubleDonationDeductionCap = incomeAfterExpensesAndOtherDeductions * 0.10;
-        const finalDoubleDonationDeduction = Math.min(doubleDonationInput * 2, doubleDonationDeductionCap);
-
+        const finalGeneralDonation = Math.min(deductions.generalDonation || 0, incomeAfterExpensesAndOtherDeductions * 0.10);
+        const finalDoubleDonationDeduction = Math.min((deductions.educationDonation || 0) * 2, incomeAfterExpensesAndOtherDeductions * 0.10);
         const finalPoliticalDonation = Math.min(deductions.politicalDonation || 0, 5000);
 
         const totalDonationDeductions = finalGeneralDonation + finalDoubleDonationDeduction + finalPoliticalDonation;
@@ -443,177 +794,198 @@
       };
     }, [incomes, deductions, incomeMode, simLife, simPension]);
 
-    const renderSidebar = () => React.createElement('div', { className: `bg-gray-100 border-r border-gray-200 flex flex-col h-full transition-all duration-300 ${isMobileMenuOpen ? 'fixed inset-y-0 left-0 z-40 w-64 shadow-xl' : 'hidden md:flex md:w-64'}` },
-      React.createElement('div', { className: "p-6 border-b border-gray-200 bg-white" },
-        React.createElement('h1', { className: "font-bold text-xl text-blue-800 tracking-tight" }, "TAX Calculator ", React.createElement('span', { className: "text-xs text-gray-500 block font-light" }, "ระบบคำนวณภาษีเงินได้บุคคลธรรมดา"))
-      ),
-      React.createElement('nav', { className: "flex-1 overflow-y-auto py-4 px-3 space-y-2" },
-        [
-          { id: 'income', icon: Calculator, label: 'รายได้ (Income)' },
-          { id: 'deduction', icon: ShieldCheck, label: 'ลดหย่อน (Deductions)' },
-          { id: 'dashboard', icon: PieChart, label: 'Optimization Dashboard' },
-          { id: 'advisor', icon: BookOpen, label: 'Advisor Script' },
-        ].map(item => {
-          const isActive = activeTab === item.id;
-          return React.createElement('button', {
-            key: item.id,
-            onClick: () => { setActiveTab(item.id); setIsMobileMenuOpen(false); },
-            className: `
-              w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all relative overflow-hidden
-              ${isActive ? 'bg-white text-blue-700 shadow-sm border-l-4 border-blue-600' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900'}
-            `
-          },
-            React.createElement(item.icon, { size: 18, className: isActive ? 'text-blue-600' : '' }),
-            React.createElement('span', { className: "relative z-10" }, item.label),
-            isActive && React.createElement('div', { className: "absolute inset-0 bg-blue-50 opacity-50 z-0" })
-          );
-        })
-      ),
-      React.createElement('div', { className: "px-4 mt-4" },
-        React.createElement('div', { className: "p-3 bg-white rounded-lg border border-gray-100 text-center" },
+    // Render Sidebar (with menu text changed and credit moved)
+    const renderSidebar = () => (
+      React.createElement('div', {
+        className: `
+          bg-gray-100 border-r border-gray-200 flex flex-col h-full transition-all duration-300
+          hidden md:flex md:w-64
+        `
+      },
+        React.createElement('div', { className: "p-6 border-b border-gray-200 bg-white" },
+          React.createElement('h1', { className: "font-bold text-xl text-blue-800 tracking-tight" }, "TAX Calculator ", React.createElement('span', { className: "text-xs text-gray-500 block font-light" }, "ระบบคำนวณภาษีเงินได้บุคคลธรรมดา"))
+        ),
+        React.createElement('nav', { className: "flex-1 overflow-y-auto py-4 px-3 space-y-2" },
+          [
+            { id: 'income', icon: Calculator, label: 'รายได้ (Income)' },
+            { id: 'deduction', icon: ShieldCheck, label: 'ลดหย่อน (Deductions)' },
+            { id: 'dashboard', icon: PieChart, label: 'Optimization Dashboard' },
+            { id: 'advisor', icon: BookOpen, label: 'Advisor Script' },
+          ].map(item => {
+            const isActive = activeTab === item.id;
+            return React.createElement('button', {
+              key: item.id,
+              onClick: () => { setActiveTab(item.id); setIsMobileMenuOpen(false); },
+              className: `
+                w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all relative overflow-hidden
+                ${isActive ? 'bg-white text-blue-700 shadow-sm border-l-4 border-blue-600' : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900'}
+              `
+            },
+              React.createElement(item.icon, { size: 18, className: isActive ? 'text-blue-600' : '' }),
+              React.createElement('span', { className: "relative z-10" }, item.label),
+              isActive && React.createElement('div', { className: "absolute inset-0 bg-blue-50 opacity-50 z-0" })
+            );
+          })
+        ),
+        React.createElement('div', { className: "p-4 border-t border-gray-200 text-center bg-gray-100/50 mt-4" },
           React.createElement('p', { className: "text-xs text-gray-500 font-light mb-1" }, "Produced by : Training Specialist"),
           React.createElement('p', { className: "text-xs text-blue-800 font-bold" }, "PRU - Academy")
         )
       )
     );
 
-    const renderIncomePage = () => React.createElement('div', { className: "space-y-6" },
-      React.createElement('div', { className: "flex justify-between items-center mb-6" },
-        React.createElement('h2', { className: "text-2xl font-bold text-gray-800" }, "ข้อมูลรายได้"),
-        React.createElement('div', { className: "flex bg-gray-200 p-1 rounded-xl text-sm font-medium shadow-inner" },
-          ['monthly', 'yearly'].map(mode => {
-            const isActive = incomeMode === mode;
-            return React.createElement('button', {
-              key: mode,
-              onClick: () => setIncomeMode(mode),
-              className: `px-6 py-2 rounded-lg transition-all flex items-center gap-2 ${isActive ? 'bg-white shadow-sm text-blue-700 font-bold' : 'text-gray-500 hover:text-gray-700'}`
-            },
-              isActive && React.createElement(Activity, { size: 14, className: "text-green-500 fill-green-500 animate-pulse" }),
-              mode === 'monthly' ? 'รายเดือน' : 'รายปี'
-            );
-          })
-        )
-      ),
-      React.createElement('div', { className: "space-y-4" },
-        incomes.map((inc) => {
-          const typeInfo = INCOME_TYPES.find(t => t.id === inc.typeId);
-          if (!inc.active && inc.typeId !== 1) return null;
-          return React.createElement('div', { key: inc.typeId, className: "bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative group hover:border-blue-300 transition-all" },
-            React.createElement('div', { className: "flex justify-between items-start mb-3" },
-              React.createElement('div', null,
-                React.createElement('h3', { className: "font-semibold text-gray-800 text-lg flex items-center gap-2" },
-                  typeInfo.name,
-                  React.createElement('button', {
-                    onClick: () => setModalData({ isOpen: true, title: typeInfo.name, content: typeInfo.desc + '\n\nการหักค่าใช้จ่าย: ' + typeInfo.deductionDesc }),
-                    className: "text-gray-400 hover:text-blue-500",
-                    'aria-label': `ข้อมูล ${typeInfo.name}`
-                  }, React.createElement(Info, { size: 16 }))
-                ),
-                typeInfo.subOptions && inc.active ? React.createElement('div', { className: "mt-2 pt-2 border-t-2 border-yellow-100" },
-                  React.createElement('div', { className: "inline-block text-xs font-medium text-yellow-700 bg-yellow-50 px-2 py-1 rounded-md border border-yellow-100 mb-2" }, "เลือกอัตราหักค่าใช้จ่าย"),
-                  React.createElement('select', {
-                    className: "mt-0 text-sm border-gray-300 rounded-md shadow-sm focus:border-yellow-300 focus:ring focus:ring-yellow-200 focus:ring-opacity-50 text-gray-600 bg-gray-50",
-                    value: inc.expenseRate,
-                    onChange: (e) => handleIncomeChange(inc.typeId, 'expenseRate', e.target.value)
-                  }, typeInfo.subOptions.map(opt => React.createElement('option', { key: opt.label, value: opt.rate }, opt.label)))
-                ) : React.createElement('p', { className: "text-sm text-gray-500" }, typeInfo.deductionDesc)
-              ),
-              inc.typeId !== 1 && React.createElement('button', { onClick: () => toggleIncomeType(inc.typeId), className: "text-red-400 hover:text-red-600", 'aria-label': `ลบ ${typeInfo.name}` }, React.createElement(X, { size: 18 }))
-            ),
-            React.createElement('div', { className: "relative" },
-              React.createElement('input', {
-                type: "number",
-                min: "0",
-                step: "1",
-                value: inc.amount,
-                onChange: (e) => handleIncomeChange(inc.typeId, 'amount', e.target.value),
-                className: "w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right font-mono text-lg",
-                placeholder: "0.00",
-                'aria-label': `${typeInfo.name} จำนวนเงิน`
-              }),
-              React.createElement('span', { className: "absolute right-4 top-3.5 text-gray-400 text-sm" }, "บาท"),
-              incomeMode === 'monthly' && React.createElement('div', { className: "mt-2 flex justify-end" },
-                React.createElement('span', { className: "text-xs text-gray-500" }, "เทียบเท่าต่อปี: "),
-                React.createElement('span', { className: "text-sm font-medium text-gray-700 ml-2" }, ((Number(inc.amount) || 0) * 12).toLocaleString() + " บาท")
-              )
-            )
-          );
-        }),
-        React.createElement('div', { className: "pt-2" },
-          React.createElement('p', { className: "text-sm text-gray-500 mb-3" }, "เพิ่มรายได้ประเภทอื่น"),
-          React.createElement('div', { className: "flex flex-wrap gap-2" },
-            incomes.filter(i => !i.active && i.typeId !== 1).map(inc => {
-              const info = INCOME_TYPES.find(t => t.id === inc.typeId);
+    // Income page (with real-time year display and annual summary)
+    const renderIncomePage = () => (
+      React.createElement('div', { className: "space-y-6 animate-in slide-in-from-bottom-4 duration-500" },
+        React.createElement('div', { className: "flex justify-between items-center mb-6" },
+          React.createElement('h2', { className: "text-2xl font-bold text-gray-800" }, "ข้อมูลรายได้"),
+          React.createElement('div', { className: "flex bg-gray-200 p-1 rounded-xl text-sm font-medium shadow-inner" },
+            ['monthly', 'yearly'].map(mode => {
+              const isActive = incomeMode === mode;
               return React.createElement('button', {
-                key: inc.typeId,
-                onClick: () => toggleIncomeType(inc.typeId),
-                className: "flex items-center gap-1.5 px-3 py-2 bg-white border border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-all"
-              }, React.createElement(Plus, { size: 14 }), info.name.split(' ')[0]);
-            })
-          )
-        ),
-        React.createElement('div', { className: "mt-8 bg-blue-50 rounded-xl p-4 flex justify-between items-center" },
-          React.createElement('div', null,
-            React.createElement('span', { className: "text-blue-800 font-semibold block" }, "รวมค่าใช้จ่าย (หักอัตโนมัติ)"),
-            React.createElement('span', { className: "text-xs text-blue-600 opacity-75" }, "คำนวณตามอัตราของรายได้แต่ละประเภทที่ระบุ")
-          ),
-          React.createElement('span', { className: "text-xl font-bold text-blue-900" }, calculateResults.totalExpenses.toLocaleString() + " บาท")
-        )
-      )
-    );
-
-    const renderDeductionPage = () => React.createElement('div', { className: "space-y-6" },
-      React.createElement('h2', { className: "text-2xl font-bold text-gray-800 mb-6" }, "รายการลดหย่อน"),
-      DEDUCTION_CATEGORIES.map(category => {
-        const items = category.items.filter(item => item.isCommon || showMoreDeductions);
-        if (items.length === 0) return null;
-        return React.createElement('div', { key: category.id, className: "bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm" },
-          React.createElement('div', { className: "px-4 py-3 border-b border-gray-200 font-bold text-blue-700 flex items-center gap-2 bg-gradient-to-r from-white via-blue-50 to-cyan-50" },
-            React.createElement(category.icon, { size: 18, className: "text-blue-500" }), category.title
-          ),
-          React.createElement('div', { className: "p-4 space-y-4" },
-            items.map((item) => {
-              const currentValue = deductions[item.key] || 0;
-              return React.createElement('div', { key: item.key, className: "flex items-center justify-between gap-4" },
-                React.createElement('div', { className: "flex items-center gap-2 flex-1" },
-                  React.createElement('span', { className: "text-sm text-gray-700" }, item.label),
-                  React.createElement('button', { onClick: () => setModalData({ isOpen: true, title: item.label, content: item.desc }), className: "text-gray-300 hover:text-yellow-500", 'aria-label': `info ${item.label}` }, React.createElement(Lightbulb, { size: 14 }))
-                ),
-                React.createElement('div', { className: "flex items-center gap-2" },
-                  React.createElement('div', { className: "text-xs px-2 py-1 rounded bg-gray-50 border border-gray-200 text-gray-600 mr-2 min-w-[72px] text-right" }, currentValue > 0 ? currentValue.toLocaleString() + " ฿" : "0 ฿"),
-                  React.createElement('input', {
-                    type: "number",
-                    min: "0",
-                    value: deductions[item.key] || 0,
-                    onChange: (e) => setDeductions({ ...deductions, [item.key]: Number(e.target.value) || 0 }),
-                    className: "w-32 px-3 py-2 bg-gray-50 border border-gray-200 rounded text-right text-sm focus:ring-1 focus:ring-blue-500 outline-none",
-                    placeholder: "0",
-                    'aria-label': `${item.label} จำนวน`
-                  })
-                )
+                key: mode,
+                onClick: () => setIncomeMode(mode),
+                className: `px-6 py-2 rounded-lg transition-all flex items-center gap-2 ${isActive ? 'bg-white shadow-sm text-blue-700 font-bold' : 'text-gray-500 hover:text-gray-700'}`
+              },
+                isActive && React.createElement(Activity, { size: 14, className: "text-green-500 fill-green-500 animate-pulse" }),
+                mode === 'monthly' ? 'รายเดือน' : 'รายปี'
               );
             })
           )
-        );
-      }),
-      React.createElement('div', { className: "mt-6 text-center" },
-        React.createElement('button', { onClick: () => setShowMoreDeductions(!showMoreDeductions), className: "text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center gap-2 mx-auto bg-white border border-blue-200 px-4 py-2 rounded-full shadow-sm", 'aria-label': 'toggle more deductions' },
-          React.createElement(Plus, { size: 16, className: (showMoreDeductions ? 'rotate-45 text-red-500' : '') }),
-          showMoreDeductions ? 'ซ่อนรายการลดหย่อนที่สำคัญน้อย' : 'แสดงรายการลดหย่อนอื่น ๆ เพิ่มเติม'
+        ),
+        // Annual summary line (real-time)
+        React.createElement('div', { className: "text-sm text-gray-600 flex items-center gap-4" },
+          React.createElement('span', null, "ยอดรวมต่อปี (Estimated annual total):"),
+          React.createElement('span', { className: "font-semibold text-gray-800" }, calculateResults.totalIncome.toLocaleString() + " ฿")
+        ),
+        React.createElement('div', { className: "space-y-4" },
+          incomes.map((inc) => {
+            const typeInfo = INCOME_TYPES.find(t => t.id === inc.typeId);
+            if (!inc.active && inc.typeId !== 1) return null;
+
+            return React.createElement('div', { key: inc.typeId, className: "bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative group hover:border-blue-300 transition-all" },
+              React.createElement('div', { className: "flex justify-between items-start mb-3" },
+                React.createElement('div', null,
+                  React.createElement('h3', { className: "font-semibold text-gray-800 text-lg flex items-center gap-2" },
+                    typeInfo.name,
+                    React.createElement('button', {
+                      onClick: () => setModalData({ isOpen: true, title: typeInfo.name, content: typeInfo.desc + '\n\nการหักค่าใช้จ่าย: ' + typeInfo.deductionDesc }),
+                      className: "text-gray-400 hover:text-blue-500 transition-colors",
+                      'aria-label': `ข้อมูล ${typeInfo.name}`
+                    }, React.createElement(Info, { size: 16 }))
+                  ),
+                  // Highlight 40(6) suboptions visually (small label + top border)
+                  typeInfo.subOptions && inc.active ? React.createElement('div', { className: "mt-2 pt-2 border-t-2 border-yellow-100" },
+                    React.createElement('div', { className: "inline-block text-xs font-medium text-yellow-700 bg-yellow-50 px-2 py-1 rounded-md border border-yellow-100 mb-2" }, "เลือกอัตราหักค่าใช้จ่าย"),
+                    React.createElement('select', {
+                      className: "mt-0 text-sm border-gray-300 rounded-md shadow-sm focus:border-yellow-300 focus:ring focus:ring-yellow-200 focus:ring-opacity-50 text-gray-600 bg-gray-50",
+                      value: inc.expenseRate,
+                      onChange: (e) => handleIncomeChange(inc.typeId, 'expenseRate', e.target.value)
+                    }, typeInfo.subOptions.map(opt => React.createElement('option', { key: opt.label, value: opt.rate }, opt.label)))
+                  ) : React.createElement('p', { className: "text-sm text-gray-500" }, typeInfo.deductionDesc)
+                ),
+                inc.typeId !== 1 && React.createElement('button', { onClick: () => toggleIncomeType(inc.typeId), className: "text-red-400 hover:text-red-600", 'aria-label': `ลบ ${typeInfo.name}` }, React.createElement(X, { size: 18 }))
+              ),
+              React.createElement('div', { className: "relative" },
+                React.createElement('input', {
+                  type: "number",
+                  min: "0",
+                  step: "1",
+                  value: inc.amount || '',
+                  onChange: (e) => handleIncomeChange(inc.typeId, 'amount', e.target.value),
+                  className: "w-full pl-4 pr-12 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-right font-mono text-lg",
+                  placeholder: "0.00",
+                  'aria-label': `${typeInfo.name} จำนวนเงิน`
+                }),
+                React.createElement('span', { className: "absolute right-4 top-3.5 text-gray-400 text-sm" }, "บาท")
+              ),
+              // real-time year display if mode is monthly
+              incomeMode === 'monthly' && React.createElement('div', { className: "mt-2 flex justify-end items-center gap-2 text-sm text-gray-600" },
+                React.createElement('span', null, "เทียบเท่าต่อปี:"),
+                React.createElement('span', { className: "font-medium text-gray-700" }, (((Number(inc.amount) || 0) * 12)).toLocaleString() + " ฿")
+              )
+            );
+          }),
+          React.createElement('div', { className: "pt-2" },
+            React.createElement('p', { className: "text-sm text-gray-500 mb-3" }, "เพิ่มรายได้ประเภทอื่น"),
+            React.createElement('div', { className: "flex flex-wrap gap-2" },
+              incomes.filter(i => !i.active && i.typeId !== 1).map(inc => {
+                const info = INCOME_TYPES.find(t => t.id === inc.typeId);
+                return React.createElement('button', {
+                  key: inc.typeId,
+                  onClick: () => toggleIncomeType(inc.typeId),
+                  className: "flex items-center gap-1.5 px-3 py-2 bg-white border border-dashed border-gray-300 rounded-lg text-sm text-gray-600 hover:border-blue-500 hover:text-blue-600 transition-all"
+                }, React.createElement(Plus, { size: 14 }), info.name.split(' ')[0]);
+              })
+            )
+          ),
+          React.createElement('div', { className: "mt-8 bg-blue-50 rounded-xl p-4 flex justify-between items-center" },
+            React.createElement('div', null,
+              React.createElement('span', { className: "text-blue-800 font-semibold block" }, "รวมค่าใช้จ่าย (หักอัตโนมัติ)"),
+              React.createElement('span', { className: "text-xs text-blue-600 opacity-75" }, "คำนวณตามอัตราของรายได้แต่ละประเภทที่ระบุ")
+            ),
+            React.createElement('span', { className: "text-xl font-bold text-blue-900" }, calculateResults.totalExpenses.toLocaleString() + " บาท")
+          )
+        )
+      );
+
+    const renderDeductionPage = () => (
+      React.createElement('div', { className: "space-y-6 animate-in slide-in-from-bottom-4 duration-500" },
+        React.createElement('h2', { className: "text-2xl font-bold text-gray-800 mb-6" }, "รายการลดหย่อน"),
+        DEDUCTION_CATEGORIES.map(category => {
+          const items = category.items.filter(item => item.isCommon || showMoreDeductions);
+          if (items.length === 0) return null;
+
+          return React.createElement('div', { key: category.id, className: "bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm" },
+            // heading with color (slightly brighter)
+            React.createElement('div', { className: "px-4 py-3 border-b border-gray-200 font-bold text-blue-700 flex items-center gap-2 bg-gradient-to-r from-white via-blue-50 to-cyan-50" },
+              React.createElement(category.icon, { size: 18, className: "text-blue-500" }), category.title
+            ),
+            React.createElement('div', { className: "p-4 space-y-4" },
+              items.map((item) => {
+                const currentValue = deductions[item.key] || 0;
+                return React.createElement('div', { key: item.key, className: "flex items-center justify-between gap-4" },
+                  React.createElement('div', { className: "flex items-center gap-2 flex-1" },
+                    React.createElement('span', { className: "text-sm text-gray-700" }, item.label),
+                    React.createElement('button', { onClick: () => setModalData({ isOpen: true, title: item.label, content: item.desc }), className: "text-gray-300 hover:text-yellow-500", 'aria-label': `info ${item.label}` }, React.createElement(Lightbulb, { size: 14 }))
+                  ),
+                  React.createElement('div', { className: "flex items-center gap-2" },
+                    // small box with current value (as requested)
+                    React.createElement('div', { className: "text-xs px-2 py-1 rounded bg-gray-50 border border-gray-200 text-gray-600 mr-2 min-w-[72px] text-right" }, currentValue > 0 ? currentValue.toLocaleString() + " ฿" : "0 ฿"),
+                    React.createElement('input', {
+                      type: "number",
+                      min: "0",
+                      value: deductions[item.key] || 0,
+                      onChange: (e) => setDeductions({ ...deductions, [item.key]: Number(e.target.value) || 0 }),
+                      className: "w-32 px-3 py-2 bg-gray-50 border border-gray-200 rounded text-right text-sm focus:ring-1 focus:ring-blue-500 outline-none",
+                      placeholder: "0",
+                      'aria-label': `${item.label} จำนวน`
+                    })
+                  )
+                );
+              })
+            )
+          );
+        }),
+        React.createElement('div', { className: "mt-6 text-center" },
+          React.createElement('button', { onClick: () => setShowMoreDeductions(!showMoreDeductions), className: "text-blue-600 hover:text-blue-800 font-medium flex items-center justify-center gap-2 mx-auto bg-white border border-blue-200 px-4 py-2 rounded-full shadow-sm", 'aria-label': 'toggle more deductions' },
+            React.createElement(Plus, { size: 16, className: (showMoreDeductions ? 'rotate-45 text-red-500' : '') }),
+            showMoreDeductions ? 'ซ่อนรายการลดหย่อนที่สำคัญน้อย' : 'แสดงรายการลดหย่อนอื่น ๆ เพิ่มเติม'
+          )
         )
       )
     );
 
     const renderDashboard = () => {
       const {
+        totalIncome,
         netIncome,
         taxPayable,
+        baseTaxPayable,
         deductionBreakdown,
         gaps,
         highestBracket,
-        maxPensionDeductible,
-        baseTaxPayable,
-        totalIncome
+        maxPensionDeductible
       } = calculateResults;
 
       const usedLifePercent = (deductionBreakdown.lifeUsed / 100000) * 100;
@@ -689,8 +1061,8 @@
               React.createElement('h3', { className: "text-2xl font-bold" }, "ประหยัดภาษีได้เพิ่มขึ้น")
             ),
             React.createElement('div', { className: "text-right" },
-              React.createElement('h2', { className: "text-3xl font-bold" }, taxSaved.toLocaleString(), " ", React.createElement('span', { className: "text-lg font-normal" }, "บาท")),
-              React.createElement('p', { className: "text-green-100 text-sm mt-1" }, "คิดเป็น " + taxSavedPercent.toFixed(1) + "% ของภาษีเดิม")
+              React.createElement('h2', { className: "text-3xl font-bold" }, Math.max(0, calculateResults.baseTaxPayable - calculateResults.taxPayable).toLocaleString(), " ", React.createElement('span', { className: "text-lg font-normal" }, "บาท")),
+              React.createElement('p', { className: "text-green-100 text-sm mt-1" }, "คิดเป็น " + (calculateResults.baseTaxPayable > 0 ? ((Math.max(0, calculateResults.baseTaxPayable - calculateResults.taxPayable) / calculateResults.baseTaxPayable) * 100).toFixed(1) : 0) + "% ของภาษีเดิม")
             )
           )
         )
@@ -698,7 +1070,6 @@
     };
 
     return React.createElement('div', { className: "flex h-screen bg-gray-100 font-sans text-gray-900 overflow-hidden" },
-      isMobileMenuOpen && React.createElement('div', { className: "fixed inset-0 bg-black/20 z-30 md:hidden backdrop-blur-sm transition-opacity", onClick: () => setIsMobileMenuOpen(false) }),
       renderSidebar(),
       React.createElement('div', { className: "flex-1 flex flex-col h-full w-full relative bg-gray-50" },
         React.createElement('div', { className: "md:hidden bg-white border-b border-gray-200 p-4 flex items-center justify-between sticky top-0 z-20 shadow-sm" },
@@ -712,11 +1083,13 @@
           )
         ),
         React.createElement('main', { className: "flex-1 overflow-y-auto p-4 md:p-8 pb-32 scroll-smooth" },
-          React.createElement('div', { className: "max-w-3xl mx-auto" },
+          React.createElement('div', { className: "max-w-5xl mx-auto space-y-6" },
             activeTab === 'income' && renderIncomePage(),
             activeTab === 'deduction' && renderDeductionPage(),
             activeTab === 'dashboard' && renderDashboard(),
-            activeTab === 'advisor' && React.createElement(AdvisorScriptNew, { taxDetails: calculateResults, simTotals: { taxSaved: Math.max(0, calculateResults.baseTaxPayable - calculateResults.taxPayable) } })
+            activeTab === 'advisor' && React.createElement(AdvisorScriptNew, { taxDetails: calculateResults, simTotals: { taxSaved: Math.max(0, calculateResults.baseTaxPayable - calculateResults.taxPayable) } }),
+            // Infographic is available on dashboard area as well
+            activeTab === 'dashboard' && React.createElement('div', null, React.createElement(InfographicCard, { totalIncome: calculateResults.totalIncome, taxBefore: calculateResults.baseTaxPayable, taxAfter: calculateResults.taxPayable }))
           )
         ),
         activeTab !== 'advisor' && activeTab !== 'dashboard' && React.createElement('div', { className: "absolute bottom-8 right-6 md:right-12 z-10" },
@@ -734,7 +1107,7 @@
     );
   }
 
-  // mount
+  // Mount
   const root = createRoot(document.getElementById('root'));
   root.render(React.createElement(React.StrictMode, null, React.createElement(App)));
 
