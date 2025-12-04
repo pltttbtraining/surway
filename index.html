@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TAX Calculator — Correct Calculation</title>
+  <title>TAX Calculator — Fixed Version</title>
 
   <!-- Tailwind CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -28,10 +28,6 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
-    .card:hover { 
-      transform: translateY(-5px); 
-      box-shadow: 0 15px 40px rgba(0,0,0,0.12);
-    }
     
     .gradient-text { 
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -54,32 +50,7 @@
       position: relative;
       overflow: hidden;
     }
-    .credit-card::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      right: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-    }
   </style>
-  
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#667eea',
-            secondary: '#764ba2',
-          },
-          fontFamily: {
-            sans: ['Inter', 'Segoe UI', 'system-ui', 'sans-serif'],
-          },
-        },
-      },
-    }
-  </script>
 </head>
 <body class="antialiased">
 
@@ -89,14 +60,12 @@
   import React, { useState, useMemo } from "https://esm.sh/react@18.2.0";
   import { createRoot } from "https://esm.sh/react-dom@18.2.0/client";
   import {
-    Calculator, PieChart, Sliders, BookOpen, Menu, X, ChevronDown,
-    Plus, Info, Lightbulb, ShieldCheck, Activity, HeartPulse,
-    Umbrella, Coins, TrendingUp, CheckCircle, Home, Users, Gift, DownloadCloud,
-    TrendingDown, CreditCard, DollarSign, FileText, BarChart3, Wallet,
-    Send, MessageSquare, Briefcase, AlertCircle
+    Calculator, BookOpen, X, Plus, ShieldCheck, Users, 
+    Gift, Home, TrendingUp, DollarSign, FileText, 
+    BarChart3, AlertCircle, ChevronRight
   } from "https://esm.sh/lucide-react@0.309.0";
 
-  /***** ข้อมูลเงินได้ตามมาตรา 40 แก้ไขให้ถูกต้อง *****/
+  /***** ข้อมูลเงินได้ตามมาตรา 40 *****/
   const INCOME_TYPES = [
     { 
       id: 1, 
@@ -105,39 +74,15 @@
       deductionDesc: 'หักค่าใช้จ่าย 50% ไม่เกิน 100,000 บาท', 
       defaultRate: 0.5, 
       hasFixedCap: true,
-      maxCap: 100000,
-      section: '40(1)',
-      note: 'หักค่าลดหย่อนส่วนบุคคล 60,000 บาทได้เพิ่ม'
+      maxCap: 100000
     },
     { 
       id: 2, 
       name: '40(2) ค่าจ้างทำของ/รับเหมา', 
       desc: 'ค่าจ้างทำของ ค่าจ้างรับเหมา ค่านายหน้า ค่าคอมมิชชั่น', 
-      deductionDesc: 'หักค่าใช้จ่าย 60% หรือตามจริง (เลือกได้)', 
+      deductionDesc: 'หักค่าใช้จ่าย 60% หรือตามจริง', 
       defaultRate: 0.6, 
-      hasFixedCap: false,
-      section: '40(2)',
-      note: 'เลือกหักตามจริงหรือเหมา 60%'
-    },
-    { 
-      id: 3, 
-      name: '40(3) ค่าลิขสิทธิ์', 
-      desc: 'ค่าลิขสิทธิ์ ค่าแห่งสิทธิ์ ค่าดำเนินงาน', 
-      deductionDesc: 'หักค่าใช้จ่าย 50% หรือตามจริง (เลือกได้)', 
-      defaultRate: 0.5, 
-      hasFixedCap: false,
-      section: '40(3)',
-      note: 'เลือกหักตามจริงหรือเหมา 50%'
-    },
-    { 
-      id: 4, 
-      name: '40(4) ดอกเบี้ย/เงินปันผล', 
-      desc: 'ดอกเบี้ย เงินปันผล เงินส่วนแบ่งกำไร', 
-      deductionDesc: 'ภาษีหัก ณ ที่จ่าย (Final Tax) ส่วนใหญ่ไม่นำมารวม', 
-      defaultRate: 0, 
-      hasFixedCap: false,
-      section: '40(4)',
-      note: 'Final Tax (10%) ไม่นำมารวมคำนวณภาษี'
+      hasFixedCap: false
     },
     { 
       id: 5, 
@@ -145,38 +90,15 @@
       desc: 'ค่าเช่าอสังหาริมทรัพย์, รถยนต์, เรือ, เครื่องจักร', 
       deductionDesc: 'หักค่าใช้จ่าย 10-30% ตามประเภททรัพย์สิน', 
       defaultRate: 0.3, 
-      hasFixedCap: false,
-      subOptions: [
-        { label: 'อสังหาริมทรัพย์ (30%)', rate: 0.3 },
-        { label: 'เรือ/เครื่องบิน (20%)', rate: 0.2 },
-        { label: 'รถยนต์/เครื่องจักร (10%)', rate: 0.1 }
-      ],
-      section: '40(5)',
-      note: 'หักตามจริงหรือเหมาตามประเภททรัพย์สิน'
-    },
-    {
-      id: 6,
-      name: '40(6) วิชาชีพอิสระ',
-      desc: 'ประกอบโรคศิลปะ, กฎหมาย, วิศวกรรม, สถาปัตยกรรม, บัญชี, ประเมินค่าทรัพย์สิน',
-      deductionDesc: 'เลือกหักค่าใช้จ่ายเหมา 30% หรือ 60% ตามวิชาชีพ',
-      defaultRate: 0.3,
-      hasFixedCap: false,
-      subOptions: [
-        { label: 'แพทย์/ประกอบโรคศิลปะ (60%)', rate: 0.6 },
-        { label: 'กฎหมาย/วิศวกร/สถาปัตย์/บัญชี (30%)', rate: 0.3 }
-      ],
-      section: '40(6)',
-      note: 'หักตามจริงหรือเหมาตามวิชาชีพ'
+      hasFixedCap: false
     },
     { 
-      id: 7, 
-      name: '40(7) รับเหมาก่อสร้าง', 
-      desc: 'รับเหมาก่อสร้างทั้งค่าแรงและค่าวัสดุ', 
-      deductionDesc: 'หักค่าใช้จ่าย 60% หรือตามจริง (เลือกได้)', 
-      defaultRate: 0.6, 
-      hasFixedCap: false,
-      section: '40(7)',
-      note: 'เลือกหักตามจริงหรือเหมา 60%'
+      id: 6,
+      name: '40(6) วิชาชีพอิสระ',
+      desc: 'ประกอบโรคศิลปะ, กฎหมาย, วิศวกรรม, สถาปัตยกรรม, บัญชี',
+      deductionDesc: 'เลือกหักค่าใช้จ่ายเหมา 30% หรือ 60% ตามวิชาชีพ',
+      defaultRate: 0.3,
+      hasFixedCap: false
     },
     { 
       id: 8, 
@@ -184,343 +106,145 @@
       desc: 'ขายของออนไลน์, ค้าขาย, ธุรกิจบริการ, เกษตรกรรม', 
       deductionDesc: 'หักค่าใช้จ่ายตามจริงหรือเหมา 40-85%', 
       defaultRate: 0.6, 
-      hasFixedCap: false,
-      subOptions: [
-        { label: 'ขายส่ง-ขายปลีก (85%)', rate: 0.85 },
-        { label: 'ธุรกิจบริการ (60%)', rate: 0.6 },
-        { label: 'เกษตรกรรม (40%)', rate: 0.4 },
-        { label: 'อื่นๆ (60%)', rate: 0.6 }
-      ],
-      section: '40(8)',
-      note: 'เลือกหักตามจริงหรือเหมาตามประเภทธุรกิจ'
+      hasFixedCap: false
     },
   ];
 
   /***** อัตราภาษีเงินได้บุคคลธรรมดา 2566 *****/
   const TAX_BRACKETS_2023 = [
-    { min: 0, max: 150000, rate: 0.00, tax: 0 },
-    { min: 150000, max: 300000, rate: 0.05, tax: 7500 },
-    { min: 300000, max: 500000, rate: 0.10, tax: 20000 },
-    { min: 500000, max: 750000, rate: 0.15, tax: 37500 },
-    { min: 750000, max: 1000000, rate: 0.20, tax: 50000 },
-    { min: 1000000, max: 2000000, rate: 0.25, tax: 250000 },
-    { min: 2000000, max: 5000000, rate: 0.30, tax: 900000 },
-    { min: 5000000, max: Infinity, rate: 0.35, tax: 0 },
+    { min: 0, max: 150000, rate: 0.00 },
+    { min: 150000, max: 300000, rate: 0.05 },
+    { min: 300000, max: 500000, rate: 0.10 },
+    { min: 500000, max: 750000, rate: 0.15 },
+    { min: 750000, max: 1000000, rate: 0.20 },
+    { min: 1000000, max: 2000000, rate: 0.25 },
+    { min: 2000000, max: 5000000, rate: 0.30 },
+    { min: 5000000, max: Infinity, rate: 0.35 },
   ];
 
-  /***** รายการลดหย่อนภาษีตามกฎหมาย 2566 *****/
+  /***** รายการลดหย่อนภาษี *****/
   const DEDUCTION_CATEGORIES = [
     {
       id: 'personal',
-      title: '1. ส่วนบุคคลและครอบครัว',
+      title: 'ส่วนบุคคลและครอบครัว',
       icon: Users,
       items: [
         { 
           key: 'personal', 
-          label: 'ส่วนตัว (60,000 บาท)', 
-          desc: 'ลดหย่อนส่วนบุคคลทุกคน 60,000 บาท (หักอัตโนมัติ)', 
-          max: 60000, 
-          isCommon: true,
-          fixed: true,
-          section: '47(1)'
+          label: 'ส่วนตัว', 
+          desc: 'ลดหย่อนส่วนบุคคลทุกคน 60,000 บาท', 
+          max: 60000,
+          fixed: true
         },
         { 
           key: 'spouse', 
-          label: 'คู่สมรส (ไม่มีเงินได้)', 
+          label: 'คู่สมรส', 
           desc: 'คู่สมรสที่ไม่มีเงินได้ หักได้ 60,000 บาท', 
-          max: 60000, 
-          isCommon: true,
-          fixed: false,
-          section: '47(2)'
+          max: 60000
         },
         { 
           key: 'child', 
-          label: 'บุตร (คนละ 30,000 บาท)', 
-          desc: 'บุตรที่ชอบด้วยกฎหมายและบุตรบุญธรรม (อายุไม่เกิน 25 ปี หรือพิการ)', 
-          max: null, 
-          isCommon: true,
-          fixed: false,
-          perItem: 30000,
-          section: '47(3)'
+          label: 'บุตร', 
+          desc: 'บุตร คนละ 30,000 บาท', 
+          max: null,
+          perItem: 30000
         },
         { 
           key: 'parent', 
-          label: 'ค่าเลี้ยงดูพ่อ-แม่ (คนละ 30,000 บาท)', 
-          desc: 'บิดา-มารดา (อายุ 60 ปีขึ้นไป หรือพิการ)', 
-          max: null, 
-          isCommon: true,
-          fixed: false,
-          perItem: 30000,
-          section: '47(4)'
-        },
-        { 
-          key: 'disabledSupporter', 
-          label: 'อุปการะผู้พิการ/ทุพพลภาพ', 
-          desc: 'หักได้ 60,000 บาทต่อคน (มีเงื่อนไขพิเศษ)', 
-          max: null, 
-          isCommon: false,
-          fixed: false,
-          perItem: 60000,
-          section: '47(5)'
-        },
+          label: 'พ่อ-แม่', 
+          desc: 'ค่าเลี้ยงดูพ่อ-แม่ คนละ 30,000 บาท', 
+          max: null,
+          perItem: 30000
+        }
       ]
     },
     {
       id: 'insurance',
-      title: '2. ประกันชีวิต/สุขภาพ/บำนาญ',
+      title: 'ประกันชีวิต/สุขภาพ/บำนาญ',
       icon: ShieldCheck,
       items: [
         { 
           key: 'lifeInsurance', 
-          label: 'ประกันชีวิตทั่วไป', 
-          desc: 'เบี้ยประกันชีวิต หักได้ไม่เกิน 100,000 บาท (รวมกับประกันสุขภาพ)', 
-          max: 100000, 
-          isCommon: true,
-          fixed: false,
-          group: 'insurance_100k',
-          section: '47(6)'
+          label: 'ประกันชีวิต', 
+          desc: 'เบี้ยประกันชีวิต หักได้ไม่เกิน 100,000 บาท', 
+          max: 100000
         },
         { 
           key: 'healthInsurance', 
-          label: 'ประกันสุขภาพ (ตัวเอง)', 
-          desc: 'เบี้ยประกันสุขภาพตัวเอง หักได้ไม่เกิน 25,000 บาท (รวมในวงเงิน 100,000 บาทกับประกันชีวิต)', 
-          max: 25000, 
-          isCommon: true,
-          fixed: false,
-          group: 'insurance_100k',
-          section: '47(6)'
+          label: 'ประกันสุขภาพ', 
+          desc: 'เบี้ยประกันสุขภาพตัวเอง ไม่เกิน 25,000 บาท', 
+          max: 25000
         },
         { 
           key: 'pensionInsurance', 
           label: 'ประกันบำนาญ', 
-          desc: 'เบี้ยประกันบำนาญ หักได้ 15% ของเงินได้ ไม่เกิน 200,000 บาท', 
-          max: 200000, 
-          isCommon: true,
-          fixed: false,
-          percentOfIncome: 0.15,
-          section: '47(7)'
-        },
-        { 
-          key: 'healthInsuranceParent', 
-          label: 'ประกันสุขภาพ (พ่อแม่)', 
-          desc: 'เบี้ยประกันสุขภาพพ่อแม่ หักได้คนละไม่เกิน 15,000 บาท', 
-          max: 15000, 
-          isCommon: false,
-          fixed: false,
-          perItem: 15000,
-          section: '47(6)'
-        },
+          desc: 'เบี้ยประกันบำนาญ 15% ของเงินได้ ไม่เกิน 200,000 บาท', 
+          max: 200000,
+          percentOfIncome: 0.15
+        }
       ]
     },
     {
       id: 'investment',
-      title: '3. การออม/การลงทุน',
+      title: 'การออม/การลงทุน',
       icon: TrendingUp,
       items: [
         { 
           key: 'rmf', 
           label: 'กองทุน RMF', 
-          desc: 'เงินลงทุนใน RMF หักได้ 30% ของเงินได้ ไม่เกิน 500,000 บาท', 
-          max: 500000, 
-          isCommon: true,
-          fixed: false,
-          percentOfIncome: 0.30,
-          group: 'investment_500k',
-          section: '47(8)'
+          desc: 'เงินลงทุนใน RMF 30% ของเงินได้ ไม่เกิน 500,000 บาท', 
+          max: 500000,
+          percentOfIncome: 0.30
         },
         { 
           key: 'ssf', 
           label: 'กองทุน SSF', 
-          desc: 'เงินลงทุนใน SSF หักได้ 30% ของเงินได้ ไม่เกิน 200,000 บาท', 
-          max: 200000, 
-          isCommon: true,
-          fixed: false,
-          percentOfIncome: 0.30,
-          group: 'investment_500k',
-          section: '47(9)'
-        },
-        { 
-          key: 'providentFund', 
-          label: 'กองทุนสำรองเลี้ยงชีพ', 
-          desc: 'เงินสะสมกองทุนสำรองเลี้ยงชีพ หักได้ 15% ของเงินเดือน ไม่เกิน 500,000 บาท', 
-          max: 500000, 
-          isCommon: true,
-          fixed: false,
-          percentOfIncome: 0.15,
-          group: 'investment_500k',
-          section: '47(10)'
-        },
-        { 
-          key: 'thaiesg', 
-          label: 'กองทุน ThaiESG', 
-          desc: 'หักได้ไม่เกิน 100,000 บาท (มีเงื่อนไข)', 
-          max: 100000, 
-          isCommon: false,
-          fixed: false,
-          section: '47(11)'
-        },
-      ]
-    },
-    {
-      id: 'donation',
-      title: '4. เงินบริจาค',
-      icon: Gift,
-      items: [
-        { 
-          key: 'generalDonation', 
-          label: 'บริจาคทั่วไป', 
-          desc: 'หักได้ไม่เกิน 10% ของเงินได้หลังหักค่าลดหย่อนอื่น', 
-          max: null, 
-          isCommon: true,
-          fixed: false,
-          percentOfNetIncome: 0.10,
-          section: '47(12)'
-        },
-        { 
-          key: 'educationDonation', 
-          label: 'บริจาคการศึกษา/สาธารณสุข (2 เท่า)', 
-          desc: 'หักได้ 2 เท่า ไม่เกิน 10% ของเงินได้หลังหักค่าลดหย่อนอื่น', 
-          max: null, 
-          isCommon: false,
-          fixed: false,
-          multiplier: 2,
-          percentOfNetIncome: 0.10,
-          section: '47(13)'
-        },
-        { 
-          key: 'politicalDonation', 
-          label: 'บริจาคพรรคการเมือง', 
-          desc: 'หักได้ไม่เกิน 5,000 บาท', 
-          max: 5000, 
-          isCommon: false,
-          fixed: false,
-          section: '47(14)'
-        },
+          desc: 'เงินลงทุนใน SSF 30% ของเงินได้ ไม่เกิน 200,000 บาท', 
+          max: 200000,
+          percentOfIncome: 0.30
+        }
       ]
     },
     {
       id: 'other',
-      title: '5. สิทธิประโยชน์อื่นๆ',
+      title: 'สิทธิประโยชน์อื่นๆ',
       icon: Home,
       items: [
         { 
           key: 'mortgageInterest', 
-          label: 'ดอกเบี้ยสินเชื่อบ้าน', 
-          desc: 'ดอกเบี้ยบ้านหลังแรก หักได้ไม่เกิน 100,000 บาท', 
-          max: 100000, 
-          isCommon: true,
-          fixed: false,
-          section: '47(15)'
+          label: 'ดอกเบี้ยบ้าน', 
+          desc: 'ดอกเบี้ยบ้านหลังแรก ไม่เกิน 100,000 บาท', 
+          max: 100000
         },
         { 
           key: 'socialSecurity', 
-          label: 'เงินสมทบประกันสังคม', 
-          desc: 'หักตามที่จ่ายจริง สูงสุด 9,000 บาท', 
-          max: 9000, 
-          isCommon: true,
-          fixed: false,
-          section: '47(16)'
-        },
-        { 
-          key: 'childBirth', 
-          label: 'ค่าฝากครรภ์/คลอดบุตร', 
-          desc: 'หักตามที่จ่ายจริง สูงสุด 60,000 บาท', 
-          max: 60000, 
-          isCommon: false,
-          fixed: false,
-          section: '47(17)'
-        },
+          label: 'ประกันสังคม', 
+          desc: 'เงินสมทบประกันสังคม สูงสุด 9,000 บาท', 
+          max: 9000
+        }
       ]
-    },
+    }
   ];
 
-  /***** ฟังก์ชันคำนวณภาษีที่ถูกต้อง *****/
+  /***** ฟังก์ชันคำนวณภาษี *****/
   const calculateTax = (taxableIncome) => {
+    let tax = 0;
     let remainingIncome = taxableIncome;
-    let totalTax = 0;
     
-    for (let i = TAX_BRACKETS_2023.length - 1; i >= 0; i--) {
-      const bracket = TAX_BRACKETS_2023[i];
+    for (const bracket of TAX_BRACKETS_2023) {
+      if (remainingIncome <= 0) break;
       
-      if (remainingIncome > bracket.min) {
-        const incomeInBracket = Math.min(remainingIncome, bracket.max) - bracket.min;
-        const taxInBracket = incomeInBracket * bracket.rate;
-        totalTax += taxInBracket;
-        remainingIncome = bracket.min;
+      const incomeInBracket = Math.min(remainingIncome, bracket.max) - bracket.min;
+      if (incomeInBracket > 0) {
+        tax += incomeInBracket * bracket.rate;
+        remainingIncome -= incomeInBracket;
       }
     }
     
-    return Math.max(0, totalTax);
+    return Math.round(tax);
   };
 
-  /***** ฟังก์ชันคำนวณค่าใช้จ่ายตามมาตรา 40 *****/
-  const calculateExpenses = (incomeType, amount, expenseRate) => {
-    const typeInfo = INCOME_TYPES.find(t => t.id === incomeType);
-    
-    if (!typeInfo) return 0;
-    
-    if (typeInfo.hasFixedCap && typeInfo.maxCap) {
-      // สำหรับ 40(1) และ 40(2) ที่หักรวมกันไม่เกิน 100,000 บาท
-      return Math.min(amount * expenseRate, typeInfo.maxCap);
-    }
-    
-    // สำหรับประเภทอื่นๆ หักตามอัตราที่กำหนด
-    return amount * expenseRate;
-  };
-
-  /***** Component สำหรับแสดงแจ้งเตือนข้อผิดพลาด *****/
-  const ValidationAlert = ({ message, type = 'warning' }) => {
-    const colors = {
-      warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
-      error: 'bg-red-50 border-red-200 text-red-800',
-      info: 'bg-blue-50 border-blue-200 text-blue-800',
-      success: 'bg-green-50 border-green-200 text-green-800',
-    };
-    
-    return (
-      React.createElement('div', { className: `p-4 rounded-xl border ${colors[type]} flex items-start gap-3 mb-4` },
-        React.createElement(AlertCircle, { className: `w-5 h-5 mt-0.5 ${type === 'warning' ? 'text-yellow-600' : type === 'error' ? 'text-red-600' : type === 'info' ? 'text-blue-600' : 'text-green-600'}` }),
-        React.createElement('div', { className: "flex-1" },
-          React.createElement('p', { className: "text-sm font-medium" }, message)
-        )
-      )
-    );
-  };
-
-  /***** Component สำหรับแสดงบัตรยอดคงเหลือ *****/
-  const BalanceCard = ({ netIncome, taxPayable, totalIncome }) => {
-    return (
-      React.createElement('div', { className: "credit-card p-6 relative overflow-hidden" },
-        React.createElement('div', { className: "relative z-10" },
-          React.createElement('div', { className: "flex justify-between items-start mb-8" },
-            React.createElement('div', null,
-              React.createElement('p', { className: "text-white/80 text-sm" }, "Tax Calculator 2566"),
-              React.createElement('h2', { className: "text-2xl font-bold text-white" }, "คำนวณภาษีเงินได้บุคคลธรรมดา")
-            ),
-            React.createElement(Calculator, { size: 32, className: "text-white/80" })
-          ),
-          React.createElement('div', { className: "mb-6" },
-            React.createElement('p', { className: "text-white/80 text-sm mb-1" }, "รายได้สุทธิ (หลังหักค่าใช้จ่ายและลดหย่อน)" },
-            React.createElement('h1', { className: "text-4xl font-bold text-white" }, 
-              netIncome.toLocaleString() + " ฿"
-            )
-          ),
-          React.createElement('div', { className: "grid grid-cols-2 gap-4" },
-            React.createElement('div', null,
-              React.createElement('p', { className: "text-white/80 text-xs mb-1" }, "รายได้รวม" },
-              React.createElement('p', { className: "text-lg font-semibold text-white" }, totalIncome.toLocaleString() + " ฿")
-            ),
-            React.createElement('div', null,
-              React.createElement('p', { className: "text-white/80 text-xs mb-1" }, "ภาษีต้องชำระ" },
-              React.createElement('p', { className: "text-lg font-semibold text-white" }, taxPayable.toLocaleString() + " ฿")
-            )
-          )
-        )
-      )
-    );
-  };
-
-  /***** Main App Component *****/
+  /***** Component หลัก *****/
   function App() {
     const [activeTab, setActiveTab] = useState('income');
     const [incomeMode, setIncomeMode] = useState('yearly');
@@ -529,460 +253,27 @@
     const [incomes, setIncomes] = useState([
       { typeId: 1, amount: 300000, active: true, expenseRate: 0.5 },
       { typeId: 2, amount: 0, active: false, expenseRate: 0.6 },
-      { typeId: 3, amount: 0, active: false, expenseRate: 0.5 },
-      { typeId: 4, amount: 0, active: false, expenseRate: 0 },
       { typeId: 5, amount: 0, active: false, expenseRate: 0.3 },
       { typeId: 6, amount: 0, active: false, expenseRate: 0.3 },
-      { typeId: 7, amount: 0, active: false, expenseRate: 0.6 },
       { typeId: 8, amount: 0, active: false, expenseRate: 0.6 },
     ]);
     
     // ข้อมูลลดหย่อน
     const [deductions, setDeductions] = useState({
-      personal: 60000, // หักอัตโนมัติ
+      personal: 60000,
       spouse: 0,
       child: 0,
       parent: 0,
-      disabledSupporter: 0,
       lifeInsurance: 0,
       healthInsurance: 0,
       pensionInsurance: 0,
-      healthInsuranceParent: 0,
       rmf: 0,
       ssf: 0,
-      providentFund: 0,
-      thaiesg: 0,
-      generalDonation: 0,
-      educationDonation: 0,
-      politicalDonation: 0,
       mortgageInterest: 0,
-      socialSecurity: 0,
-      childBirth: 0,
+      socialSecurity: 0
     });
     
     const [errors, setErrors] = useState([]);
-
-    /***** คำนวณผลลัพธ์ *****/
-    const calculateResults = useMemo(() => {
-      setErrors([]);
-      
-      // คำนวณรายได้รวม
-      const totalIncome = incomes
-        .filter(inc => inc.active)
-        .reduce((sum, inc) => {
-          const amount = incomeMode === 'monthly' ? inc.amount * 12 : inc.amount;
-          return sum + (amount || 0);
-        }, 0);
-      
-      // คำนวณค่าใช้จ่ายตามมาตรา 40
-      let totalExpenses = 0;
-      const expensesDetail = [];
-      
-      // ตรวจสอบ 40(1) และ 40(2) ที่หักรวมกันไม่เกิน 100,000 บาท
-      const type1 = incomes.find(inc => inc.typeId === 1);
-      const type2 = incomes.find(inc => inc.typeId === 2);
-      
-      if (type1?.active || type2?.active) {
-        const inc1Amount = incomeMode === 'monthly' ? (type1?.amount || 0) * 12 : (type1?.amount || 0);
-        const inc2Amount = incomeMode === 'monthly' ? (type2?.amount || 0) * 12 : (type2?.amount || 0);
-        const combinedExpense = (inc1Amount + inc2Amount) * 0.5;
-        const expense = Math.min(combinedExpense, 100000);
-        totalExpenses += expense;
-        
-        if (type1?.active) {
-          expensesDetail.push({ type: '40(1)', amount: expense * (inc1Amount / (inc1Amount + inc2Amount)) });
-        }
-        if (type2?.active) {
-          expensesDetail.push({ type: '40(2)', amount: expense * (inc2Amount / (inc1Amount + inc2Amount)) });
-        }
-      }
-      
-      // คำนวณค่าใช้จ่ายประเภทอื่นๆ
-      incomes.filter(inc => inc.active && inc.typeId > 2).forEach(inc => {
-        const amount = incomeMode === 'monthly' ? inc.amount * 12 : inc.amount;
-        const expense = amount * inc.expenseRate;
-        totalExpenses += expense;
-        const typeInfo = INCOME_TYPES.find(t => t.id === inc.typeId);
-        expensesDetail.push({ type: typeInfo?.section, amount: expense });
-      });
-      
-      // คำนวณเงินได้สุทธิก่อนลดหย่อน
-      const incomeBeforeDeductions = Math.max(0, totalIncome - totalExpenses);
-      
-      /***** คำนวณลดหย่อน *****/
-      let totalDeductions = 0;
-      const deductionsDetail = [];
-      
-      // 1. ส่วนบุคคลและครอบครัว
-      totalDeductions += 60000; // ส่วนตัวอัตโนมัติ
-      deductionsDetail.push({ category: 'ส่วนตัว', amount: 60000 });
-      
-      if (deductions.spouse > 0) {
-        const spouseDeduction = Math.min(deductions.spouse * 60000, 60000);
-        totalDeductions += spouseDeduction;
-        deductionsDetail.push({ category: 'คู่สมรส', amount: spouseDeduction });
-      }
-      
-      if (deductions.child > 0) {
-        const childDeduction = deductions.child * 30000;
-        totalDeductions += childDeduction;
-        deductionsDetail.push({ category: 'บุตร', amount: childDeduction });
-      }
-      
-      if (deductions.parent > 0) {
-        const parentDeduction = deductions.parent * 30000;
-        totalDeductions += parentDeduction;
-        deductionsDetail.push({ category: 'พ่อแม่', amount: parentDeduction });
-      }
-      
-      if (deductions.disabledSupporter > 0) {
-        const disabledDeduction = deductions.disabledSupporter * 60000;
-        totalDeductions += disabledDeduction;
-        deductionsDetail.push({ category: 'ผู้พิการ', amount: disabledDeduction });
-      }
-      
-      // 2. ประกันชีวิต/สุขภาพ (รวมกันไม่เกิน 100,000 บาท)
-      const lifeInsurance = Math.min(deductions.lifeInsurance, 100000);
-      const healthInsurance = Math.min(deductions.healthInsurance, 25000);
-      const insuranceTotal = Math.min(lifeInsurance + healthInsurance, 100000);
-      totalDeductions += insuranceTotal;
-      deductionsDetail.push({ category: 'ประกันชีวิต/สุขภาพ', amount: insuranceTotal });
-      
-      // ตรวจสอบเกินเพดาน
-      if (lifeInsurance + healthInsurance > 100000) {
-        setErrors(prev => [...prev, 'เบี้ยประกันชีวิต+สุขภาพรวมเกิน 100,000 บาท จะหักได้ไม่เกิน 100,000 บาท']);
-      }
-      
-      // 3. ประกันบำนาญ (15% ของรายได้ ไม่เกิน 200,000 บาท)
-      const pensionMax = Math.min(totalIncome * 0.15, 200000);
-      const pensionInsurance = Math.min(deductions.pensionInsurance, pensionMax);
-      totalDeductions += pensionInsurance;
-      deductionsDetail.push({ category: 'ประกันบำนาญ', amount: pensionInsurance });
-      
-      // 4. ประกันสุขภาพพ่อแม่
-      const healthInsuranceParent = Math.min(deductions.healthInsuranceParent, 15000);
-      totalDeductions += healthInsuranceParent;
-      if (healthInsuranceParent > 0) {
-        deductionsDetail.push({ category: 'ประกันสุขภาพพ่อแม่', amount: healthInsuranceParent });
-      }
-      
-      // 5. การลงทุน (RMF, SSF, PVD รวมกันไม่เกิน 500,000 บาท)
-      const rmfMax = Math.min(totalIncome * 0.30, 500000);
-      const ssfMax = Math.min(totalIncome * 0.30, 200000);
-      const pvdMax = Math.min(totalIncome * 0.15, 500000);
-      
-      const rmf = Math.min(deductions.rmf, rmfMax);
-      const ssf = Math.min(deductions.ssf, ssfMax);
-      const providentFund = Math.min(deductions.providentFund, pvdMax);
-      
-      const investmentTotal = Math.min(rmf + ssf + providentFund, 500000);
-      totalDeductions += investmentTotal;
-      deductionsDetail.push({ category: 'การลงทุน (RMF/SSF/PVD)', amount: investmentTotal });
-      
-      // 6. ThaiESG
-      const thaiesg = Math.min(deductions.thaiesg, 100000);
-      totalDeductions += thaiesg;
-      if (thaiesg > 0) {
-        deductionsDetail.push({ category: 'ThaiESG', amount: thaiesg });
-      }
-      
-      // 7. เงินบริจาค (คำนวณหลังหักลดหย่อนอื่น)
-      const netIncomeBeforeDonation = Math.max(0, incomeBeforeDeductions - totalDeductions);
-      const donationLimit = netIncomeBeforeDonation * 0.10;
-      
-      const generalDonation = Math.min(deductions.generalDonation, donationLimit);
-      const educationDonation = Math.min(deductions.educationDonation * 2, donationLimit);
-      const politicalDonation = Math.min(deductions.politicalDonation, 5000);
-      
-      const totalDonation = generalDonation + educationDonation + politicalDonation;
-      const actualDonation = Math.min(totalDonation, donationLimit);
-      
-      totalDeductions += actualDonation;
-      if (actualDonation > 0) {
-        deductionsDetail.push({ category: 'เงินบริจาค', amount: actualDonation });
-      }
-      
-      // 8. สิทธิประโยชน์อื่นๆ
-      const mortgageInterest = Math.min(deductions.mortgageInterest, 100000);
-      const socialSecurity = Math.min(deductions.socialSecurity, 9000);
-      const childBirth = Math.min(deductions.childBirth, 60000);
-      
-      totalDeductions += mortgageInterest + socialSecurity + childBirth;
-      
-      if (mortgageInterest > 0) deductionsDetail.push({ category: 'ดอกเบี้ยบ้าน', amount: mortgageInterest });
-      if (socialSecurity > 0) deductionsDetail.push({ category: 'ประกันสังคม', amount: socialSecurity });
-      if (childBirth > 0) deductionsDetail.push({ category: 'คลอดบุตร', amount: childBirth });
-      
-      /***** คำนวณเงินได้สุทธิและภาษี *****/
-      const netIncome = Math.max(0, incomeBeforeDeductions - totalDeductions);
-      const taxPayable = calculateTax(netIncome);
-      
-      /***** ตรวจสอบข้อผิดพลาดทั่วไป *****/
-      if (totalIncome > 0 && netIncome < 0) {
-        setErrors(prev => [...prev, 'ค่าลดหย่อนเกินจำนวนเงินได้ กรุณาตรวจสอบข้อมูล']);
-      }
-      
-      return {
-        totalIncome,
-        totalExpenses,
-        expensesDetail,
-        incomeBeforeDeductions,
-        totalDeductions,
-        deductionsDetail,
-        netIncome,
-        taxPayable,
-        errors
-      };
-    }, [incomes, deductions, incomeMode]);
-
-    /***** หน้าจอแสดงรายได้ *****/
-    const renderIncomePage = () => {
-      return (
-        React.createElement('div', { className: "space-y-6" },
-          errors.length > 0 && errors.map((error, index) => (
-            React.createElement(ValidationAlert, { key: index, message: error, type: 'warning' })
-          )),
-          
-          React.createElement('div', { className: "card p-6" },
-            React.createElement('div', { className: "flex justify-between items-center mb-6" },
-              React.createElement('h2', { className: "text-xl font-bold text-gray-800" }, "รายได้ตามมาตรา 40" },
-              React.createElement('div', { className: "flex bg-gray-100 p-1 rounded-lg" },
-                ['yearly', 'monthly'].map(mode => (
-                  React.createElement('button', {
-                    key: mode,
-                    onClick: () => setIncomeMode(mode),
-                    className: `px-4 py-2 rounded-md ${incomeMode === mode ? 'bg-white shadow text-primary' : 'text-gray-600'}`,
-                  }, mode === 'monthly' ? 'รายเดือน' : 'รายปี')
-                ))
-              )
-            ),
-            
-            React.createElement('div', { className: "space-y-4" },
-              incomes.filter(inc => inc.active).map((inc) => {
-                const typeInfo = INCOME_TYPES.find(t => t.id === inc.typeId);
-                return (
-                  React.createElement('div', { key: inc.typeId, className: "border border-gray-200 rounded-xl p-4" },
-                    React.createElement('div', { className: "flex justify-between items-start mb-3" },
-                      React.createElement('div', null,
-                        React.createElement('h3', { className: "font-semibold text-gray-800" }, typeInfo.name),
-                        React.createElement('p', { className: "text-sm text-gray-500" }, typeInfo.deductionDesc)
-                      ),
-                      inc.typeId !== 1 && React.createElement('button', 
-                        { onClick: () => toggleIncomeType(inc.typeId), className: "text-red-400 hover:text-red-600" }, 
-                        React.createElement(X, { size: 18 })
-                      )
-                    ),
-                    
-                    <input
-                      type="number"
-                      min="0"
-                      step="1000"
-                      value={inc.amount}
-                      onChange={(e) => handleIncomeChange(inc.typeId, 'amount', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                      placeholder="0"
-                    />
-                    
-                    {typeInfo.subOptions && (
-                      <div className="mt-3">
-                        <select
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
-                          value={inc.expenseRate}
-                          onChange={(e) => handleIncomeChange(inc.typeId, 'expenseRate', parseFloat(e.target.value))}
-                        >
-                          {typeInfo.subOptions.map(opt => (
-                            <option key={opt.label} value={opt.rate}>{opt.label}</option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
-                    
-                    {incomeMode === 'monthly' && inc.amount > 0 && (
-                      <div className="mt-2 text-sm text-gray-500">
-                        เทียบเท่าต่อปี: {(inc.amount * 12).toLocaleString()} บาท
-                      </div>
-                    )}
-                  </div>
-                );
-              }),
-              
-              React.createElement('div', { className: "pt-4 border-t border-gray-200" },
-                React.createElement('p', { className: "text-sm text-gray-500 mb-3" }, "เพิ่มรายได้ประเภทอื่น:" },
-                React.createElement('div', { className: "flex flex-wrap gap-2" },
-                  incomes.filter(i => !i.active && i.typeId !== 1).map(inc => {
-                    const info = INCOME_TYPES.find(t => t.id === inc.typeId);
-                    return React.createElement('button', {
-                      key: inc.typeId,
-                      onClick: () => toggleIncomeType(inc.typeId),
-                      className: "flex items-center gap-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-600 hover:border-primary hover:text-primary",
-                    }, React.createElement(Plus, { size: 14 }), info.name.split(' ')[0]);
-                  })
-                )
-              )
-            )
-          )
-        )
-      );
-    };
-
-    /***** หน้าจอแสดงลดหย่อน *****/
-    const renderDeductionPage = () => {
-      return (
-        React.createElement('div', { className: "space-y-6" },
-          React.createElement('div', { className: "card p-6" },
-            React.createElement('h2', { className: "text-xl font-bold text-gray-800 mb-6" }, "ค่าลดหย่อนภาษี" },
-            
-            React.createElement('div', { className: "space-y-8" },
-              DEDUCTION_CATEGORIES.map(category => (
-                React.createElement('div', { key: category.id },
-                  React.createElement('div', { className: "flex items-center gap-2 mb-4" },
-                    React.createElement(category.icon, { className: "w-5 h-5 text-primary" }),
-                    React.createElement('h3', { className: "text-lg font-semibold text-gray-800" }, category.title)
-                  ),
-                  
-                  React.createElement('div', { className: "space-y-4" },
-                    category.items.map(item => {
-                      const currentValue = deductions[item.key] || 0;
-                      return (
-                        React.createElement('div', { key: item.key, className: "flex flex-col md:flex-row md:items-center justify-between gap-2 p-4 bg-gray-50 rounded-lg" },
-                          React.createElement('div', { className: "flex-1" },
-                            React.createElement('div', { className: "flex items-center gap-2 mb-1" },
-                              React.createElement('span', { className: "font-medium text-gray-700" }, item.label),
-                              item.max && React.createElement('span', { className: "text-xs text-gray-500" }, `(สูงสุด ${item.max.toLocaleString()} บาท)`)
-                            ),
-                            React.createElement('p', { className: "text-sm text-gray-500" }, item.desc)
-                          ),
-                          
-                          React.createElement('div', { className: "flex items-center gap-2" },
-                            React.createElement('input', {
-                              type: "number",
-                              min: "0",
-                              value: currentValue,
-                              onChange: (e) => setDeductions({ ...deductions, [item.key]: Number(e.target.value) || 0 }),
-                              className: "w-32 px-3 py-2 border border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-primary outline-none",
-                              placeholder: "0"
-                            }),
-                            React.createElement('span', { className: "text-gray-500" }, "บาท")
-                          )
-                        )
-                      );
-                    })
-                  )
-                )
-              ))
-            )
-          )
-        )
-      );
-    };
-
-    /***** หน้าจอดashboard *****/
-    const renderDashboard = () => {
-      const results = calculateResults;
-      
-      return (
-        React.createElement('div', { className: "space-y-6" },
-          React.createElement(BalanceCard, {
-            netIncome: results.netIncome,
-            taxPayable: results.taxPayable,
-            totalIncome: results.totalIncome
-          }),
-          
-          React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-6" },
-            React.createElement('div', { className: "card p-6" },
-              React.createElement('h3', { className: "text-lg font-bold text-gray-800 mb-4" }, "สรุปการคำนวณ" },
-              React.createElement('div', { className: "space-y-3" },
-                React.createElement('div', { className: "flex justify-between" },
-                  React.createElement('span', { className: "text-gray-600" }, "รายได้รวม" },
-                  React.createElement('span', { className: "font-semibold" }, results.totalIncome.toLocaleString() + " บาท"})
-                ),
-                React.createElement('div', { className: "flex justify-between" },
-                  React.createElement('span', { className: "text-gray-600" }, "หักค่าใช้จ่ายมาตรา 40" },
-                  React.createElement('span', { className: "text-red-600 font-semibold" }, "-" + results.totalExpenses.toLocaleString() + " บาท"})
-                ),
-                React.createElement('div', { className: "flex justify-between border-t border-gray-200 pt-2" },
-                  React.createElement('span', { className: "text-gray-800 font-medium" }, "เงินได้พึงประเมิน" },
-                  React.createElement('span', { className: "font-bold" }, results.incomeBeforeDeductions.toLocaleString() + " บาท"})
-                ),
-                React.createElement('div', { className: "flex justify-between" },
-                  React.createElement('span', { className: "text-gray-600" }, "หักค่าลดหย่อนทั้งหมด" },
-                  React.createElement('span', { className: "text-red-600 font-semibold" }, "-" + results.totalDeductions.toLocaleString() + " บาท"})
-                ),
-                React.createElement('div', { className: "flex justify-between border-t border-gray-200 pt-2" },
-                  React.createElement('span', { className: "text-gray-800 font-medium" }, "เงินได้สุทธิ" },
-                  React.createElement('span', { className: "font-bold text-primary" }, results.netIncome.toLocaleString() + " บาท"})
-                ),
-                React.createElement('div', { className: "flex justify-between border-t-2 border-gray-300 pt-2 mt-2" },
-                  React.createElement('span', { className: "text-gray-800 font-bold" }, "ภาษีต้องชำระ" },
-                  React.createElement('span', { className: "text-xl font-bold text-red-600" }, results.taxPayable.toLocaleString() + " บาท"})
-                )
-              )
-            ),
-            
-            React.createElement('div', { className: "card p-6" },
-              React.createElement('h3', { className: "text-lg font-bold text-gray-800 mb-4" }, "อัตราภาษีแบบขั้นบันได 2566" },
-              React.createElement('div', { className: "space-y-2" },
-                TAX_BRACKETS_2023.map((bracket, index) => (
-                  React.createElement('div', { 
-                    key: index, 
-                    className: `flex justify-between p-2 rounded ${results.netIncome > bracket.min ? 'bg-blue-50' : ''}` 
-                  },
-                    React.createElement('span', { className: "text-sm" },
-                      bracket.max === Infinity ? 
-                        `เกิน ${bracket.min.toLocaleString()} บาท` :
-                        `${bracket.min.toLocaleString()} - ${bracket.max.toLocaleString()} บาท`
-                    ),
-                    React.createElement('span', { className: "font-medium" }, `อัตรา ${(bracket.rate * 100)}%`)
-                  )
-                ))
-              ),
-              React.createElement('div', { className: "mt-4 p-3 bg-gray-50 rounded-lg" },
-                React.createElement('p', { className: "text-sm text-gray-600" },
-                  "เงินได้สุทธิของคุณอยู่ในช่วง: ",
-                  React.createElement('span', { className: "font-semibold" },
-                    TAX_BRACKETS_2023.find(b => results.netIncome > b.min && results.netIncome <= b.max)?.min?.toLocaleString() || "0",
-                    " - ",
-                    TAX_BRACKETS_2023.find(b => results.netIncome > b.min && results.netIncome <= b.max)?.max === Infinity ? 
-                      "∞" : 
-                      TAX_BRACKETS_2023.find(b => results.netIncome > b.min && results.netIncome <= b.max)?.max?.toLocaleString(),
-                    " บาท"
-                  )
-                )
-              )
-            )
-          ),
-          
-          React.createElement('div', { className: "card p-6" },
-            React.createElement('h3', { className: "text-lg font-bold text-gray-800 mb-4" }, "รายละเอียดค่าใช้จ่ายและลดหย่อน" },
-            React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-6" },
-              React.createElement('div', null,
-                React.createElement('h4', { className: "font-semibold text-gray-700 mb-3" }, "ค่าใช้จ่ายมาตรา 40" },
-                React.createElement('div', { className: "space-y-2" },
-                  results.expensesDetail.map((exp, idx) => (
-                    React.createElement('div', { key: idx, className: "flex justify-between text-sm" },
-                      React.createElement('span', { className: "text-gray-600" }, exp.type },
-                      React.createElement('span', { className: "text-red-600" }, "-" + exp.amount.toLocaleString() + " บาท"})
-                    )
-                  ))
-                )
-              ),
-              
-              React.createElement('div', null,
-                React.createElement('h4', { className: "font-semibold text-gray-700 mb-3" }, "ค่าลดหย่อน" },
-                React.createElement('div', { className: "space-y-2" },
-                  results.deductionsDetail.map((ded, idx) => (
-                    React.createElement('div', { key: idx, className: "flex justify-between text-sm" },
-                      React.createElement('span', { className: "text-gray-600" }, ded.category },
-                      React.createElement('span', { className: "text-blue-600" }, "-" + ded.amount.toLocaleString() + " บาท"})
-                    )
-                  ))
-                )
-              )
-            )
-          )
-        )
-      );
-    };
 
     /***** ฟังก์ชันจัดการรายได้ *****/
     const handleIncomeChange = (id, field, val) => {
@@ -994,23 +285,375 @@
 
     const toggleIncomeType = (id) => {
       setIncomes(incomes.map(inc =>
-        inc.typeId === id ? { ...inc, active: !inc.active } : inc
+        inc.typeId === id ? { ...inc, active: !inc.active, amount: inc.active ? 0 : inc.amount } : inc
       ));
     };
 
-    return (
-      React.createElement('div', { className: "min-h-screen bg-gray-50" },
-        React.createElement('div', { className: "max-w-6xl mx-auto px-4 py-6" },
-          React.createElement('header', { className: "mb-8" },
-            React.createElement('div', { className: "flex justify-between items-center mb-6" },
+    /***** คำนวณผลลัพธ์ *****/
+    const calculateResults = useMemo(() => {
+      const newErrors = [];
+      
+      // คำนวณรายได้รวม (แปลงเป็นรายปีถ้าเป็นรายเดือน)
+      let totalIncome = 0;
+      incomes.filter(inc => inc.active).forEach(inc => {
+        const amount = incomeMode === 'monthly' ? inc.amount * 12 : inc.amount;
+        totalIncome += amount || 0;
+      });
+      
+      // คำนวณค่าใช้จ่าย
+      let totalExpenses = 0;
+      
+      // 40(1) และ 40(2) หักรวมกันไม่เกิน 100,000 บาท
+      const type1 = incomes.find(inc => inc.typeId === 1);
+      const type2 = incomes.find(inc => inc.typeId === 2);
+      
+      if (type1?.active || type2?.active) {
+        const inc1Amount = incomeMode === 'monthly' ? (type1?.amount || 0) * 12 : (type1?.amount || 0);
+        const inc2Amount = incomeMode === 'monthly' ? (type2?.amount || 0) * 12 : (type2?.amount || 0);
+        const combinedExpense = (inc1Amount + inc2Amount) * 0.5;
+        const expense = Math.min(combinedExpense, 100000);
+        totalExpenses += expense;
+      }
+      
+      // ประเภทอื่นๆ
+      incomes.filter(inc => inc.active && inc.typeId > 2).forEach(inc => {
+        const amount = incomeMode === 'monthly' ? inc.amount * 12 : inc.amount;
+        totalExpenses += amount * (inc.expenseRate || 0);
+      });
+      
+      // คำนวณเงินได้สุทธิก่อนลดหย่อน
+      const incomeBeforeDeductions = Math.max(0, totalIncome - totalExpenses);
+      
+      /***** คำนวณลดหย่อน *****/
+      let totalDeductions = 0;
+      
+      // ส่วนตัว (หักอัตโนมัติ)
+      totalDeductions += 60000;
+      
+      // คู่สมรส
+      if (deductions.spouse > 0) {
+        totalDeductions += Math.min(deductions.spouse * 60000, 60000);
+      }
+      
+      // บุตร
+      if (deductions.child > 0) {
+        totalDeductions += deductions.child * 30000;
+      }
+      
+      // พ่อแม่
+      if (deductions.parent > 0) {
+        totalDeductions += deductions.parent * 30000;
+      }
+      
+      // ประกันชีวิต + สุขภาพ (รวมกันไม่เกิน 100,000 บาท)
+      const lifeInsurance = Math.min(deductions.lifeInsurance, 100000);
+      const healthInsurance = Math.min(deductions.healthInsurance, 25000);
+      const insuranceTotal = Math.min(lifeInsurance + healthInsurance, 100000);
+      totalDeductions += insuranceTotal;
+      
+      if (lifeInsurance + healthInsurance > 100000) {
+        newErrors.push('เบี้ยประกันชีวิต+สุขภาพรวมเกิน 100,000 บาท จะหักได้ไม่เกิน 100,000 บาท');
+      }
+      
+      // ประกันบำนาญ (15% ของรายได้ ไม่เกิน 200,000 บาท)
+      const pensionMax = Math.min(totalIncome * 0.15, 200000);
+      const pensionInsurance = Math.min(deductions.pensionInsurance, pensionMax);
+      totalDeductions += pensionInsurance;
+      
+      // การลงทุน
+      const rmfMax = Math.min(totalIncome * 0.30, 500000);
+      const ssfMax = Math.min(totalIncome * 0.30, 200000);
+      
+      const rmf = Math.min(deductions.rmf, rmfMax);
+      const ssf = Math.min(deductions.ssf, ssfMax);
+      
+      totalDeductions += rmf + ssf;
+      
+      // สิทธิประโยชน์อื่นๆ
+      const mortgageInterest = Math.min(deductions.mortgageInterest, 100000);
+      const socialSecurity = Math.min(deductions.socialSecurity, 9000);
+      
+      totalDeductions += mortgageInterest + socialSecurity;
+      
+      /***** คำนวณเงินได้สุทธิและภาษี *****/
+      const netIncome = Math.max(0, incomeBeforeDeductions - totalDeductions);
+      const taxPayable = calculateTax(netIncome);
+      
+      /***** ตรวจสอบข้อผิดพลาด *****/
+      if (totalIncome > 0 && netIncome < 0) {
+        newErrors.push('ค่าลดหย่อนเกินจำนวนเงินได้ กรุณาตรวจสอบข้อมูล');
+      }
+      
+      setErrors(newErrors);
+      
+      return {
+        totalIncome,
+        totalExpenses,
+        incomeBeforeDeductions,
+        totalDeductions,
+        netIncome,
+        taxPayable
+      };
+    }, [incomes, deductions, incomeMode]);
+
+    /***** หน้าจอแสดงรายได้ *****/
+    const renderIncomePage = () => {
+      return React.createElement('div', { className: "space-y-6" },
+        errors.length > 0 && errors.map((error, index) =>
+          React.createElement('div', {
+            key: index,
+            className: "p-4 bg-yellow-50 border border-yellow-200 rounded-xl flex items-start gap-3 mb-4"
+          },
+            React.createElement(AlertCircle, { className: "w-5 h-5 text-yellow-600 mt-0.5" }),
+            React.createElement('p', { className: "text-sm font-medium text-yellow-800" }, error)
+          )
+        ),
+        
+        React.createElement('div', { className: "card p-6" },
+          React.createElement('div', { className: "flex justify-between items-center mb-6" },
+            React.createElement('h2', { className: "text-xl font-bold text-gray-800" }, "รายได้ตามมาตรา 40"),
+            React.createElement('div', { className: "flex bg-gray-100 p-1 rounded-lg" },
+              React.createElement('button', {
+                onClick: () => setIncomeMode('yearly'),
+                className: `px-4 py-2 rounded-md ${incomeMode === 'yearly' ? 'bg-white shadow text-blue-600' : 'text-gray-600'}`
+              }, "รายปี"),
+              React.createElement('button', {
+                onClick: () => setIncomeMode('monthly'),
+                className: `px-4 py-2 rounded-md ${incomeMode === 'monthly' ? 'bg-white shadow text-blue-600' : 'text-gray-600'}`
+              }, "รายเดือน")
+            )
+          ),
+          
+          React.createElement('div', { className: "space-y-4" },
+            incomes.filter(inc => inc.active).map((inc) => {
+              const typeInfo = INCOME_TYPES.find(t => t.id === inc.typeId);
+              return React.createElement('div', { key: inc.typeId, className: "border border-gray-200 rounded-xl p-4" },
+                React.createElement('div', { className: "flex justify-between items-start mb-3" },
+                  React.createElement('div', null,
+                    React.createElement('h3', { className: "font-semibold text-gray-800" }, typeInfo.name),
+                    React.createElement('p', { className: "text-sm text-gray-500" }, typeInfo.deductionDesc)
+                  ),
+                  inc.typeId !== 1 && React.createElement('button', {
+                    onClick: () => toggleIncomeType(inc.typeId),
+                    className: "text-red-400 hover:text-red-600"
+                  }, React.createElement(X, { size: 18 }))
+                ),
+                
+                React.createElement('input', {
+                  type: "number",
+                  min: "0",
+                  step: "1000",
+                  value: inc.amount,
+                  onChange: (e) => handleIncomeChange(inc.typeId, 'amount', e.target.value),
+                  className: "w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none",
+                  placeholder: "0"
+                }),
+                
+                incomeMode === 'monthly' && inc.amount > 0 && React.createElement('div', { className: "mt-2 text-sm text-gray-500" },
+                  `เทียบเท่าต่อปี: ${(inc.amount * 12).toLocaleString()} บาท`
+                )
+              );
+            }),
+            
+            React.createElement('div', { className: "pt-4 border-t border-gray-200" },
+              React.createElement('p', { className: "text-sm text-gray-500 mb-3" }, "เพิ่มรายได้ประเภทอื่น:"),
+              React.createElement('div', { className: "flex flex-wrap gap-2" },
+                incomes.filter(i => !i.active && i.typeId !== 1).map(inc => {
+                  const info = INCOME_TYPES.find(t => t.id === inc.typeId);
+                  return React.createElement('button', {
+                    key: inc.typeId,
+                    onClick: () => toggleIncomeType(inc.typeId),
+                    className: "flex items-center gap-1 px-3 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-600 hover:border-blue-500 hover:text-blue-600"
+                  }, React.createElement(Plus, { size: 14 }), info.name.split(' ')[0]);
+                })
+              )
+            )
+          )
+        )
+      );
+    };
+
+    /***** หน้าจอแสดงลดหย่อน *****/
+    const renderDeductionPage = () => {
+      return React.createElement('div', { className: "space-y-6" },
+        React.createElement('div', { className: "card p-6" },
+          React.createElement('h2', { className: "text-xl font-bold text-gray-800 mb-6" }, "ค่าลดหย่อนภาษี"),
+          
+          React.createElement('div', { className: "space-y-8" },
+            DEDUCTION_CATEGORIES.map(category =>
+              React.createElement('div', { key: category.id },
+                React.createElement('div', { className: "flex items-center gap-2 mb-4" },
+                  React.createElement(category.icon, { className: "w-5 h-5 text-blue-600" }),
+                  React.createElement('h3', { className: "text-lg font-semibold text-gray-800" }, category.title)
+                ),
+                
+                React.createElement('div', { className: "space-y-4" },
+                  category.items.map(item => {
+                    const currentValue = deductions[item.key] || 0;
+                    return React.createElement('div', { key: item.key, className: "flex flex-col md:flex-row md:items-center justify-between gap-2 p-4 bg-gray-50 rounded-lg" },
+                      React.createElement('div', { className: "flex-1" },
+                        React.createElement('div', { className: "flex items-center gap-2 mb-1" },
+                          React.createElement('span', { className: "font-medium text-gray-700" }, item.label),
+                          item.max && React.createElement('span', { className: "text-xs text-gray-500" }, `(สูงสุด ${item.max.toLocaleString()} บาท)`)
+                        ),
+                        React.createElement('p', { className: "text-sm text-gray-500" }, item.desc)
+                      ),
+                      
+                      React.createElement('div', { className: "flex items-center gap-2" },
+                        React.createElement('input', {
+                          type: "number",
+                          min: "0",
+                          value: currentValue,
+                          onChange: (e) => setDeductions({ ...deductions, [item.key]: Number(e.target.value) || 0 }),
+                          className: "w-32 px-3 py-2 border border-gray-300 rounded-lg text-right focus:ring-2 focus:ring-blue-500 outline-none",
+                          placeholder: "0"
+                        }),
+                        React.createElement('span', { className: "text-gray-500" }, "บาท")
+                      )
+                    );
+                  })
+                )
+              )
+            )
+          )
+        )
+      );
+    };
+
+    /***** หน้าจอดashboard *****/
+    const renderDashboard = () => {
+      const results = calculateResults;
+      
+      // หาว่าเงินได้สุทธิอยู่ช่วงไหน
+      const currentBracket = TAX_BRACKETS_2023.find(bracket => 
+        results.netIncome > bracket.min && results.netIncome <= bracket.max
+      );
+      
+      return React.createElement('div', { className: "space-y-6" },
+        React.createElement('div', { className: "credit-card p-6 relative overflow-hidden" },
+          React.createElement('div', { className: "relative z-10" },
+            React.createElement('div', { className: "flex justify-between items-start mb-8" },
               React.createElement('div', null,
-                React.createElement('h1', { className: "text-2xl font-bold gradient-text" }, "TAX Calculator 2566" },
-                React.createElement('p', { className: "text-gray-600" }, "คำนวณภาษีเงินได้บุคคลธรรมดาตามกฎหมายปัจจุบัน" }
+                React.createElement('p', { className: "text-white/80 text-sm" }, "Tax Calculator 2566"),
+                React.createElement('h2', { className: "text-2xl font-bold text-white" }, "คำนวณภาษีเงินได้บุคคลธรรมดา")
+              ),
+              React.createElement(Calculator, { size: 32, className: "text-white/80" })
+            ),
+            React.createElement('div', { className: "mb-6" },
+              React.createElement('p', { className: "text-white/80 text-sm mb-1" }, "รายได้สุทธิ (หลังหักค่าใช้จ่ายและลดหย่อน)" ),
+              React.createElement('h1', { className: "text-4xl font-bold text-white" }, 
+                results.netIncome.toLocaleString() + " ฿"
               )
             ),
+            React.createElement('div', { className: "grid grid-cols-2 gap-4" },
+              React.createElement('div', null,
+                React.createElement('p', { className: "text-white/80 text-xs mb-1" }, "รายได้รวม" ),
+                React.createElement('p', { className: "text-lg font-semibold text-white" }, results.totalIncome.toLocaleString() + " ฿")
+              ),
+              React.createElement('div', null,
+                React.createElement('p', { className: "text-white/80 text-xs mb-1" }, "ภาษีต้องชำระ" ),
+                React.createElement('p', { className: "text-lg font-semibold text-white" }, results.taxPayable.toLocaleString() + " ฿")
+              )
+            )
+          )
+        ),
+        
+        React.createElement('div', { className: "grid grid-cols-1 md:grid-cols-2 gap-6" },
+          React.createElement('div', { className: "card p-6" },
+            React.createElement('h3', { className: "text-lg font-bold text-gray-800 mb-4" }, "สรุปการคำนวณ"),
+            React.createElement('div', { className: "space-y-3" },
+              React.createElement('div', { className: "flex justify-between" },
+                React.createElement('span', { className: "text-gray-600" }, "รายได้รวม"),
+                React.createElement('span', { className: "font-semibold" }, results.totalIncome.toLocaleString() + " บาท")
+              ),
+              React.createElement('div', { className: "flex justify-between" },
+                React.createElement('span', { className: "text-gray-600" }, "หักค่าใช้จ่ายมาตรา 40"),
+                React.createElement('span', { className: "text-red-600 font-semibold" }, "-" + results.totalExpenses.toLocaleString() + " บาท")
+              ),
+              React.createElement('div', { className: "flex justify-between border-t border-gray-200 pt-2" },
+                React.createElement('span', { className: "text-gray-800 font-medium" }, "เงินได้พึงประเมิน"),
+                React.createElement('span', { className: "font-bold" }, results.incomeBeforeDeductions.toLocaleString() + " บาท")
+              ),
+              React.createElement('div', { className: "flex justify-between" },
+                React.createElement('span', { className: "text-gray-600" }, "หักค่าลดหย่อนทั้งหมด"),
+                React.createElement('span', { className: "text-red-600 font-semibold" }, "-" + results.totalDeductions.toLocaleString() + " บาท")
+              ),
+              React.createElement('div', { className: "flex justify-between border-t border-gray-200 pt-2" },
+                React.createElement('span', { className: "text-gray-800 font-medium" }, "เงินได้สุทธิ"),
+                React.createElement('span', { className: "font-bold text-blue-600" }, results.netIncome.toLocaleString() + " บาท")
+              ),
+              React.createElement('div', { className: "flex justify-between border-t-2 border-gray-300 pt-2 mt-2" },
+                React.createElement('span', { className: "text-gray-800 font-bold" }, "ภาษีต้องชำระ"),
+                React.createElement('span', { className: "text-xl font-bold text-red-600" }, results.taxPayable.toLocaleString() + " บาท")
+              )
+            )
+          ),
+          
+          React.createElement('div', { className: "card p-6" },
+            React.createElement('h3', { className: "text-lg font-bold text-gray-800 mb-4" }, "อัตราภาษีแบบขั้นบันได 2566"),
+            React.createElement('div', { className: "space-y-2" },
+              TAX_BRACKETS_2023.map((bracket, index) =>
+                React.createElement('div', { 
+                  key: index, 
+                  className: `flex justify-between p-2 rounded ${currentBracket === bracket ? 'bg-blue-50' : ''}` 
+                },
+                  React.createElement('span', { className: "text-sm" },
+                    bracket.max === Infinity ? 
+                      `เกิน ${bracket.min.toLocaleString()} บาท` :
+                      `${bracket.min.toLocaleString()} - ${bracket.max.toLocaleString()} บาท`
+                  ),
+                  React.createElement('span', { className: "font-medium" }, `อัตรา ${(bracket.rate * 100)}%`)
+                )
+              )
+            ),
+            React.createElement('div', { className: "mt-4 p-3 bg-gray-50 rounded-lg" },
+              currentBracket && React.createElement('p', { className: "text-sm text-gray-600" },
+                "เงินได้สุทธิของคุณอยู่ในอัตราภาษี: ",
+                React.createElement('span', { className: "font-semibold" }, (currentBracket.rate * 100) + "%")
+              )
+            )
+          )
+        )
+      );
+    };
+
+    /***** หน้าจอข้อมูลกฎหมาย *****/
+    const renderInfoPage = () => {
+      return React.createElement('div', { className: "card p-6" },
+        React.createElement('h2', { className: "text-xl font-bold text-gray-800 mb-4" }, "ข้อมูลกฎหมายภาษี 2566"),
+        React.createElement('div', { className: "space-y-4" },
+          React.createElement('div', { className: "p-4 bg-blue-50 rounded-lg" },
+            React.createElement('h3', { className: "font-semibold text-blue-800 mb-2" }, "หลักเกณฑ์สำคัญ"),
+            React.createElement('ul', { className: "list-disc list-inside text-sm text-blue-700 space-y-1" },
+              React.createElement('li', null, "เงินได้ประเภท 40(1) และ 40(2) หักค่าใช้จ่ายรวมกันไม่เกิน 100,000 บาท"),
+              React.createElement('li', null, "ส่วนตัวหักอัตโนมัติ 60,000 บาททุกคน"),
+              React.createElement('li', null, "ประกันชีวิต+สุขภาพรวมกันไม่เกิน 100,000 บาท"),
+              React.createElement('li', null, "RMF/SSF/PVD รวมกันไม่เกิน 500,000 บาท")
+            )
+          ),
+          React.createElement('div', { className: "p-4 bg-green-50 rounded-lg" },
+            React.createElement('h3', { className: "font-semibold text-green-800 mb-2" }, "แหล่งข้อมูลอ้างอิง"),
+            React.createElement('ul', { className: "text-sm text-green-700 space-y-1" },
+              React.createElement('li', null, "ประมวลรัษฎากร มาตรา 40, 47"),
+              React.createElement('li', null, "กรมสรรพากร ประกาศปี 2566"),
+              React.createElement('li', null, "ข้อมูล ณ วันที่ 1 มกราคม 2567")
+            )
+          )
+        )
+      );
+    };
+
+    return React.createElement('div', { className: "min-h-screen bg-gray-50" },
+      React.createElement('div', { className: "max-w-6xl mx-auto px-4 py-6" },
+        React.createElement('header', { className: "mb-8" },
+          React.createElement('div', { className: "flex justify-between items-center mb-6" },
+            React.createElement('div', null,
+              React.createElement('h1', { className: "text-2xl font-bold gradient-text" }, "TAX Calculator 2566"),
+              React.createElement('p', { className: "text-gray-600" }, "คำนวณภาษีเงินได้บุคคลธรรมดาตามกฎหมายปัจจุบัน")
+            ),
             React.createElement('div', { className: "text-right" },
-              React.createElement('p', { className: "text-sm text-gray-500" }, "ประจำปี" },
-              React.createElement('p', { className: "font-bold text-primary" }, "พ.ศ. 2566-2567" }
+              React.createElement('p', { className: "text-sm text-gray-500" }, "ประจำปี"),
+              React.createElement('p', { className: "font-bold text-blue-600" }, "พ.ศ. 2566-2567")
             )
           )
         ),
@@ -1022,16 +665,16 @@
               { id: 'deduction', label: 'ลดหย่อน', icon: FileText },
               { id: 'dashboard', label: 'ผลการคำนวณ', icon: Calculator },
               { id: 'info', label: 'ข้อมูลกฎหมาย', icon: BookOpen },
-            ].map(tab => (
+            ].map(tab =>
               React.createElement('button', {
                 key: tab.id,
                 onClick: () => setActiveTab(tab.id),
-                className: `flex items-center gap-2 px-4 py-3 rounded-lg whitespace-nowrap ${activeTab === tab.id ? 'tab-active' : 'text-gray-600 hover:bg-gray-200'}`,
+                className: `flex items-center gap-2 px-4 py-3 rounded-lg whitespace-nowrap ${activeTab === tab.id ? 'tab-active' : 'text-gray-600 hover:bg-gray-200'}`
               },
                 React.createElement(tab.icon, { size: 18 }),
                 React.createElement('span', { className: "font-medium" }, tab.label)
               )
-            ))
+            )
           )
         ),
         
@@ -1039,42 +682,21 @@
           activeTab === 'income' && renderIncomePage(),
           activeTab === 'deduction' && renderDeductionPage(),
           activeTab === 'dashboard' && renderDashboard(),
-          activeTab === 'info' && React.createElement('div', { className: "card p-6" },
-            React.createElement('h2', { className: "text-xl font-bold text-gray-800 mb-4" }, "ข้อมูลกฎหมายภาษี 2566" },
-            React.createElement('div', { className: "space-y-4" },
-              React.createElement('div', { className: "p-4 bg-blue-50 rounded-lg" },
-                React.createElement('h3', { className: "font-semibold text-blue-800 mb-2" }, "หลักเกณฑ์สำคัญ" },
-                React.createElement('ul', { className: "list-disc list-inside text-sm text-blue-700 space-y-1" },
-                  React.createElement('li', null, "เงินได้ประเภท 40(1) และ 40(2) หักค่าใช้จ่ายรวมกันไม่เกิน 100,000 บาท" },
-                  React.createElement('li', null, "ส่วนตัวหักอัตโนมัติ 60,000 บาททุกคน" },
-                  React.createElement('li', null, "ประกันชีวิต+สุขภาพรวมกันไม่เกิน 100,000 บาท" },
-                  React.createElement('li', null, "RMF/SSF/PVD รวมกันไม่เกิน 500,000 บาท" },
-                  React.createElement('li', null, "เงินบริจาคหักได้ไม่เกิน 10% ของเงินได้หลังหักลดหย่อนอื่น" }
-                )
-              ),
-              React.createElement('div', { className: "p-4 bg-green-50 rounded-lg" },
-                React.createElement('h3', { className: "font-semibold text-green-800 mb-2" }, "แหล่งข้อมูลอ้างอิง" },
-                React.createElement('ul', { className: "text-sm text-green-700 space-y-1" },
-                  React.createElement('li', null, "ประมวลรัษฎากร มาตรา 40, 47" },
-                  React.createElement('li', null, "กรมสรรพากร ประกาศปี 2566" },
-                  React.createElement('li', null, "ข้อมูล ณ วันที่ 1 มกราคม 2567" }
-                )
-              )
-            )
-          )
+          activeTab === 'info' && renderInfoPage()
         ),
         
         React.createElement('footer', { className: "mt-8 pt-6 border-t border-gray-200 text-center text-gray-500 text-sm" },
-          React.createElement('p', null, "คำนวณภาษีเงินได้บุคคลธรรมดาตามกฎหมายไทย" },
-          React.createElement('p', { className: "mt-1" }, "© 2567 ข้อมูลอ้างอิงจากกรมสรรพากร" }
+          React.createElement('p', null, "คำนวณภาษีเงินได้บุคคลธรรมดาตามกฎหมายไทย"),
+          React.createElement('p', { className: "mt-1" }, "© 2567 ข้อมูลอ้างอิงจากกรมสรรพากร")
         )
       )
     );
   }
 
-  // Mount
-  const root = createRoot(document.getElementById('root'));
-  root.render(React.createElement(React.StrictMode, null, React.createElement(App)));
+  // Mount React app
+  const rootElement = document.getElementById('root');
+  const root = createRoot(rootElement);
+  root.render(React.createElement(App));
 
   </script>
 </body>
